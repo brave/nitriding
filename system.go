@@ -40,10 +40,9 @@ func seedEntropyPool() error {
 
 	var written int
 	for totalWritten := 0; totalWritten < seedSize; {
-		// We ignore the error because of a bug that will return an error
-		// despite having obtained an attestation document:
-		// https://github.com/hf/nsm/issues/2
-		res, _ := s.Send(&request.GetRandom{})
+		if res, err := s.Send(&request.GetRandom{}); err != nil {
+			return err
+		}
 		if res.Error != "" {
 			return errors.New(string(res.Error))
 		}
