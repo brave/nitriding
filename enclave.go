@@ -26,9 +26,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mdlayher/vsock"
 
-	"github.com/brave-experiments/nitriding/randseed"
-	"github.com/brave-experiments/viproxy"
 	"golang.org/x/crypto/acme/autocert"
+
+	"github.com/blocky/nitriding/randseed"
+	"github.com/brave-experiments/viproxy"
 )
 
 const (
@@ -66,6 +67,7 @@ type Config struct {
 	FdCur      uint64
 	FdMax      uint64
 	AppURL     string
+	UseHTTPS   bool
 }
 
 // NewEnclave creates and returns a new enclave with the given config.
@@ -168,7 +170,11 @@ func (e *Enclave) Start() error {
 			_ = l.Close()
 		}()
 
-		return e.httpSrv.ServeTLS(l, "", "")
+		if e.cfg.UseHTTPS {
+			return e.httpSrv.ServeTLS(l, "", "")
+		} else {
+			return e.httpSrv.Serve(l)
+		}
 	}
 	l, err = net.Listen("tcp", e.httpSrv.Addr)
 	if err != nil {
@@ -177,7 +183,11 @@ func (e *Enclave) Start() error {
 	defer func() {
 		_ = l.Close()
 	}()
-	return e.httpSrv.ServeTLS(l, "", "")
+	if e.cfg.UseHTTPS {
+		return e.httpSrv.ServeTLS(l, "", "")
+	} else {
+		return e.httpSrv.Serve(l)
+	}
 }
 
 // genSelfSignedCert creates and returns a self-signed TLS certificate based on

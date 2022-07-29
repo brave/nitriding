@@ -1,4 +1,4 @@
-module github.com/brave-experiments/nitriding
+module github.com/blocky/nitriding
 
 go 1.17
 
@@ -8,8 +8,8 @@ require (
 	github.com/hf/nsm v0.0.0-20211106132757-1ae65a6a69ae
 	github.com/mdlayher/vsock v1.1.1
 	github.com/milosgajdos/tenus v0.0.3
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/sys v0.0.0-20220727055044-e65921a090b8
 )
 
 require (
