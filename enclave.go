@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -43,18 +44,26 @@ const (
 	// parentProxyPort determines the TCP port of the SOCKS proxy that's
 	// running on the parent EC2 instance.
 	parentProxyPort = 1080
+	pathNonce       = "/nonce"
+	pathAttestation = "/attestation"
+	pathKeys        = "/keys"
+	pathRoot        = "/"
 )
 
 var (
-	elog = log.New(os.Stderr, "nitriding: ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
+	elog             = log.New(os.Stderr, "nitriding: ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
+	errNoKeyMaterial = errors.New("no key material registered")
 )
 
 // Enclave represents a service running inside an AWS Nitro Enclave.
 type Enclave struct {
-	cfg     *Config
-	httpSrv http.Server
-	router  *chi.Mux
-	certFpr [sha256.Size]byte
+	sync.RWMutex
+	cfg         *Config
+	httpSrv     http.Server
+	router      *chi.Mux
+	certFpr     [sha256.Size]byte
+	nonceCache  *cache
+	keyMaterial any
 }
 
 // Config represents the configuration of our enclave service.
@@ -80,6 +89,7 @@ func NewEnclave(cfg *Config) *Enclave {
 			Addr:    fmt.Sprintf(":%d", cfg.Port),
 			Handler: r,
 		},
+		nonceCache: newCache(defaultItemExpiry),
 	}
 	if cfg.Debug {
 		e.router.Use(middleware.Logger)
@@ -97,11 +107,11 @@ func (e *Enclave) Start() error {
 
 	inEnclave, err := randseed.InEnclave()
 	if err != nil {
-		return fmt.Errorf("%s: couldn't determine if we're in enclave: %v", errPrefix, err)
+		return fmt.Errorf("%s: couldn't determine if we're in enclave: %w", errPrefix, err)
 	}
 	if inEnclave {
 		if err = assignLoAddr(); err != nil {
-			return fmt.Errorf("%s: failed to assign loopback address: %v", errPrefix, err)
+			return fmt.Errorf("%s: failed to assign loopback address: %w", errPrefix, err)
 		}
 		elog.Println("Assigned address to lo interface.")
 	}
@@ -118,30 +128,32 @@ func (e *Enclave) Start() error {
 		err = e.genSelfSignedCert()
 	}
 	if err != nil {
-		return fmt.Errorf("%s: failed to create certificate: %v", errPrefix, err)
+		return fmt.Errorf("%s: failed to create certificate: %w", errPrefix, err)
 	}
 	if inEnclave {
-		e.router.Get("/attestation", getAttestationHandler(&e.certFpr))
+		e.router.Get(pathAttestation, getAttestationHandler(&e.certFpr))
 	}
-	e.router.Get("/", getIndexHandler(e.cfg))
+	e.router.Get(pathNonce, getNonceHandler(e))
+	e.router.Get(pathKeys, getKeysHandler(e, time.Now))
+	e.router.Get(pathRoot, getIndexHandler(e.cfg))
 
 	// Tell Go's HTTP library to use SOCKS proxy for both HTTP and HTTPS.
 	if err := os.Setenv("HTTP_PROXY", e.cfg.SOCKSProxy); err != nil {
-		return fmt.Errorf("%s: failed to set env var: %v", errPrefix, err)
+		return fmt.Errorf("%s: failed to set env var: %w", errPrefix, err)
 	}
 	if err := os.Setenv("HTTPS_PROXY", e.cfg.SOCKSProxy); err != nil {
-		return fmt.Errorf("%s: failed to set env var: %v", errPrefix, err)
+		return fmt.Errorf("%s: failed to set env var: %w", errPrefix, err)
 	}
 
 	// Set up AF_INET to AF_VSOCK proxy to facilitate the use of the SOCKS
 	// proxy.
 	u, err := url.Parse(e.cfg.SOCKSProxy)
 	if err != nil {
-		return fmt.Errorf("failed to parse SOCKSProxy from config: %s", err)
+		return fmt.Errorf("failed to parse SOCKSProxy from config: %w", err)
 	}
 	inAddr, err := net.ResolveTCPAddr("tcp", u.Host)
 	if err != nil {
-		return fmt.Errorf("failed to resolve SOCKSProxy from config: %s", err)
+		return fmt.Errorf("failed to resolve SOCKSProxy from config: %w", err)
 	}
 	tuple := &viproxy.Tuple{
 		InAddr:  inAddr,
@@ -149,14 +161,14 @@ func (e *Enclave) Start() error {
 	}
 	proxy := viproxy.NewVIProxy([]*viproxy.Tuple{tuple})
 	if err := proxy.Start(); err != nil {
-		return fmt.Errorf("failed to start VIProxy: %s", err)
+		return fmt.Errorf("failed to start VIProxy: %w", err)
 	}
 
 	elog.Printf("Starting Web server on port %s.", e.httpSrv.Addr)
 	var l net.Listener
 	inEnclave, err = randseed.InEnclave()
 	if err != nil {
-		return fmt.Errorf("%s: couldn't determine if we're in enclave: %v", errPrefix, err)
+		return fmt.Errorf("%s: couldn't determine if we're in enclave: %w", errPrefix, err)
 	}
 
 	// Finally, start the Web server.  If we're inside an enclave, we use a
@@ -164,7 +176,7 @@ func (e *Enclave) Start() error {
 	if inEnclave {
 		l, err = vsock.Listen(uint32(e.cfg.Port), nil)
 		if err != nil {
-			return fmt.Errorf("%s: failed to create vsock listener: %v", errPrefix, err)
+			return fmt.Errorf("%s: failed to create vsock listener: %w", errPrefix, err)
 		}
 		defer func() {
 			_ = l.Close()
@@ -178,7 +190,7 @@ func (e *Enclave) Start() error {
 	}
 	l, err = net.Listen("tcp", e.httpSrv.Addr)
 	if err != nil {
-		return fmt.Errorf("%s: failed to create tcp listener: %v", errPrefix, err)
+		return fmt.Errorf("%s: failed to create tcp listener: %w", errPrefix, err)
 	}
 	defer func() {
 		_ = l.Close()
@@ -268,7 +280,7 @@ func (e *Enclave) setupAcme() error {
 	elog.Printf("ACME hostname set to %s.", e.cfg.FQDN)
 	var cache autocert.Cache
 	if err = os.MkdirAll(acmeCertCacheDir, 0700); err != nil {
-		return fmt.Errorf("Failed to create cache directory: %v", err)
+		return fmt.Errorf("Failed to create cache directory: %w", err)
 	}
 	cache = autocert.DirCache(acmeCertCacheDir)
 	certManager := autocert.Manager{
@@ -377,4 +389,29 @@ func (e *Enclave) AddRoute(method, pattern string, handlerFn http.HandlerFunc) {
 	case http.MethodTrace:
 		e.router.Trace(pattern, handlerFn)
 	}
+}
+
+// SetKeyMaterial registers the enclave's key material (e.g., secret encryption
+// keys) as being ready to be synchronized to other, identical enclaves.  Note
+// that the key material's underlying data structure must be marshallable to
+// JSON.
+//
+// This is only necessary if you intend to scale enclaves horizontally.  If you
+// will only ever run a single enclave, ignore this function.
+func (e *Enclave) SetKeyMaterial(keyMaterial any) {
+	e.Lock()
+	defer e.Unlock()
+
+	e.keyMaterial = keyMaterial
+}
+
+// KeyMaterial returns the key material or, if none was registered, an error.
+func (e *Enclave) KeyMaterial() (any, error) {
+	e.RLock()
+	defer e.RUnlock()
+
+	if e.keyMaterial == nil {
+		return nil, errNoKeyMaterial
+	}
+	return e.keyMaterial, nil
 }
