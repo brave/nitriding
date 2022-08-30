@@ -1,24 +1,19 @@
 module github.com/blocky/nitriding
 
-go 1.18
+go 1.19
 
 require (
-	github.com/brave-experiments/viproxy v0.1.0
-	github.com/go-chi/chi/v5 v5.0.7
-	github.com/hf/nitrite v0.0.0-20211104000856-f9e0dcc73703
 	github.com/hf/nsm v0.0.0-20211106132757-1ae65a6a69ae
-	github.com/mdlayher/vsock v1.1.1
-	github.com/milosgajdos/tenus v0.0.3
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49
+	github.com/stretchr/testify v1.8.0
+	golang.org/x/exp v0.0.0-20220826205824-bd9bcdd0b820
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
 )
 
 require (
-	github.com/docker/libcontainer v2.2.1+incompatible // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/mdlayher/socket v0.2.3 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/text v0.3.7 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
