@@ -3,7 +3,7 @@ package validation_test
 import (
 	"testing"
 
-	"github.com/blocky/nitriding/validation"
+	"github.com/brave/nitriding/validation"
 	"github.com/stretchr/testify/assert"
 )
 

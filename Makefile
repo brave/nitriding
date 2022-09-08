@@ -5,18 +5,19 @@ godeps = go.mod go.sum
 all: test lint
 
 mock:
-	@mockery --all
+	@mockery --dir certificate --name PrivilegedCert
+	@mockery --dir certificate --name Converter
+	@mockery --dir validation --name StringValidator
 
 FUZZTIME=5s
 
 fuzz:
-	cd certificate && go test -fuzz=FuzzPemToDer_CannotParsePEM -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzEncodeToMemory_NeverFails -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzEncodeToMemoryThenPemToDer -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzMakeSelfSigCert -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzSelfSigCert_ToFile -parallel=1 -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzSelfSigCert_FromFile -parallel=1 -fuzztime=$(FUZZTIME)
+	cd certificate && go test -fuzz=FuzzBaseConverter_PemToDer -fuzztime=$(FUZZTIME)
+	cd certificate && go test -fuzz=FuzzBaseConverter_DerToPem_NeverFails -fuzztime=$(FUZZTIME)
+	cd certificate && go test -fuzz=FuzzBaseConverter_DerToPemThenPemToDer -fuzztime=$(FUZZTIME)
+	cd certificate && go test -fuzz=FuzzMakeBasePrivilegedCert -fuzztime=$(FUZZTIME)
 	cd validation && go test -fuzz=FuzzFileValidator_Validate -parallel=1 -fuzztime=$(FUZZTIME)
+
 
 lint:
 	golangci-lint run
@@ -26,3 +27,4 @@ test: $(godeps)
 
 clean:
 	go clean -fuzzcache
+	rm -rf mocks

@@ -1,11 +1,10 @@
-module github.com/blocky/nitriding
+module github.com/brave/nitriding
 
 go 1.19
 
 require (
 	github.com/hf/nsm v0.0.0-20211106132757-1ae65a6a69ae
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/exp v0.0.0-20220826205824-bd9bcdd0b820
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
 )
 

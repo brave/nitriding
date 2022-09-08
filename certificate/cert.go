@@ -1,96 +1,85 @@
 package certificate
 
 import (
-	"crypto/ecdsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/pem"
 	"errors"
-	"os"
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-const certificateValidity = time.Hour * 24 * 356
 
 type (
-	Digest   [32]byte
-	DerBytes []byte
-	PemBytes []byte
+	DigestBytes [32]byte
+	DerBytes    []byte
+	PemBytes    []byte
 )
 
-type BasicCert interface {
-	ToMemory() (PemBytes, error)
-	DerBytes() DerBytes
-	Digest() Digest
-}
-
 type Cert interface {
-	BasicCert
-	PrivateKey() (*ecdsa.PrivateKey, error)
-	ToFile(fileName string) (*os.File, error)
+	DerBytes() DerBytes
+	PemBytes() (PemBytes, error)
+	Digest() DigestBytes
 }
 
-func VerifyCert(t *testing.T, cert BasicCert) {
-	require.NotNil(t, cert)
-
-	pemBytes, err := cert.ToMemory()
-	assert.NoError(t, err)
-
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM(pemBytes)
-	assert.True(t, ok)
-
-	intermediates := x509.NewCertPool()
-	currentTime := time.Now()
-
-	parsedCert, err := x509.ParseCertificate(cert.DerBytes())
-	assert.NoError(t, err)
-
-	_, err = parsedCert.Verify(x509.VerifyOptions{
-		Intermediates: intermediates,
-		Roots:         roots,
-		CurrentTime:   currentTime,
-		KeyUsages: []x509.ExtKeyUsage{
-			x509.ExtKeyUsageAny,
-		},
-	})
-	assert.NoError(t, err)
+type BaseCert struct {
+	derBytes  DerBytes
+	converter Converter
 }
 
-func PemToDer(pemBytes PemBytes) (DerBytes, error) {
-	rest := []byte{}
-	var block *pem.Block
-	for rest != nil {
-		block, rest = pem.Decode(pemBytes)
-		if block == nil {
-			return DerBytes{}, errors.New("no PEM data found")
-		}
-		if block.Type == "CERTIFICATE" {
-			cert, err := x509.ParseCertificate(block.Bytes)
-			if err != nil {
-				return DerBytes{}, err
-			}
-			return cert.Raw, nil
-		}
-		pemBytes = rest
+func MakeBaseCertFromDerBytes(derBytes DerBytes) (BaseCert, error) {
+	return MakeBaseCertFromDerBytesRaw(derBytes, BaseConverter{})
+}
+
+func MakeBaseCertFromDerBytesRaw(
+	derBytes DerBytes,
+	converter Converter,
+) (
+	BaseCert,
+	error,
+) {
+	if derBytes == nil {
+		return BaseCert{}, errors.New("derBytes cannot be nil")
 	}
-	return DerBytes{}, errors.New(
-		"pem.Decode failed because it didn't find a CERTIFICATE block",
+
+	return BaseCert{
+		derBytes:  derBytes,
+		converter: converter,
+	}, nil
+}
+
+func MakeBaseCertFromPemBytes(
+	pemBytes PemBytes,
+	allowCA bool,
+) (
+	BaseCert,
+	error,
+) {
+	return MakeBaseCertFromPemBytesRaw(
+		pemBytes,
+		BaseConverter{allowCA: allowCA},
 	)
 }
 
-func CertDigest(derBytes DerBytes) Digest {
-	return sha256.Sum256(derBytes)
+func MakeBaseCertFromPemBytesRaw(
+	pemBytes PemBytes,
+	converter Converter,
+) (
+	BaseCert,
+	error,
+) {
+	if pemBytes == nil {
+		return BaseCert{}, errors.New("pemBytes cannot be nil")
+	}
+	derBytes, err := converter.PemToDer(pemBytes)
+	if err != nil {
+		return BaseCert{}, err
+	}
+	return MakeBaseCertFromDerBytesRaw(derBytes, converter)
 }
 
-func EncodeToMemory(derBytes DerBytes) (PemBytes, error) {
-	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	if pemCert == nil {
-		return nil, errors.New("failed to encode certificate")
-	}
-	return pemCert, nil
+func (cert BaseCert) DerBytes() DerBytes {
+	return cert.derBytes
+}
+
+func (cert BaseCert) PemBytes() (PemBytes, error) {
+	return cert.converter.DerToPem(cert.derBytes)
+}
+
+func (cert BaseCert) Digest() DigestBytes {
+	return cert.converter.DerToDigest(cert.derBytes)
 }

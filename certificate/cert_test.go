@@ -1,123 +1,165 @@
 package certificate_test
 
 import (
-	"bytes"
-	"encoding/pem"
-	"regexp"
+	"crypto/sha256"
+	"crypto/x509"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/blocky/nitriding/certificate"
-	"github.com/blocky/nitriding/nitridingtest"
+	"github.com/brave/nitriding/certificate"
+	"github.com/brave/nitriding/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestPemToDer_HappyPath(t *testing.T) {
-	cert, err := certificate.MakeSelfSigCert("", "")
+func VerifyCert(t *testing.T, cert certificate.Cert) {
+	require.NotNil(t, cert)
+
+	pemBytes, err := cert.PemBytes()
 	assert.NoError(t, err)
 
-	pemBytes := pem.EncodeToMemory(
-		&pem.Block{Type: "CERTIFICATE",
-			Bytes: cert.DerBytes()},
-	)
-	assert.NotNil(t, pemBytes)
+	roots := x509.NewCertPool()
+	ok := roots.AppendCertsFromPEM(pemBytes)
+	assert.True(t, ok)
 
-	derBytes, err := certificate.PemToDer(pemBytes)
+	intermediates := x509.NewCertPool()
+	currentTime := time.Now()
+
+	parsedCert, err := x509.ParseCertificate(cert.DerBytes())
+	assert.NoError(t, err)
+
+	_, err = parsedCert.Verify(x509.VerifyOptions{
+		Intermediates: intermediates,
+		Roots:         roots,
+		CurrentTime:   currentTime,
+		KeyUsages: []x509.ExtKeyUsage{
+			x509.ExtKeyUsageAny,
+		},
+	})
+	assert.NoError(t, err)
+}
+
+func TestMakeBaseCertFromDerBytesRaw_HappyPath(t *testing.T) {
+	converter := new(mocks.Converter)
+	derBytes := certificate.DerBytes("some DER bytes")
+
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
 	assert.NoError(t, err)
 	assert.Equal(t, cert.DerBytes(), derBytes)
+
+	converter.AssertExpectations(t)
 }
 
-func TestPemToDer_CannotParsePEM(t *testing.T) {
-	_, err := certificate.PemToDer([]byte("not PEM data"))
-	assert.ErrorContains(t, err, "no PEM data found")
+func TestMakeBaseCertFromDerBytesRaw_NilDerBytes(t *testing.T) {
+	converter := new(mocks.Converter)
+
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(nil, converter)
+	assert.ErrorContains(t, err, "derBytes cannot be nil")
+	assert.Equal(t, certificate.BaseCert{}, cert)
+
+	converter.AssertExpectations(t)
 }
 
-func FuzzPemToDer_CannotParsePEM(f *testing.F) {
-	f.Add([]byte("no PEM data here")) //no PEM data found
-	f.Fuzz(func(t *testing.T, badPEMBytes []byte) {
-		_, err := certificate.PemToDer(badPEMBytes)
-		assert.ErrorContains(t, err, "no PEM data found")
-	})
+func TestMakeBaseCertFromPemBytesRaw_HappyPath(t *testing.T) {
+	converter := new(mocks.Converter)
+	pemBytes := certificate.PemBytes("some PEM bytes")
+	derBytes := certificate.DerBytes("some DER bytes")
+
+	converter.On("PemToDer", pemBytes).Return(derBytes, nil)
+
+	cert, err := certificate.MakeBaseCertFromPemBytesRaw(pemBytes, converter)
+	assert.NoError(t, err)
+	assert.Equal(t, cert.DerBytes(), derBytes)
+
+	converter.AssertExpectations(t)
 }
 
-func TestEncodeToMemory_HappyPath(t *testing.T) {
-	cert, err := certificate.MakeSelfSigCert("", "")
+func TestMakeBaseCertFromPemBytesRaw_NilPemBytes(t *testing.T) {
+	converter := new(mocks.Converter)
+
+	cert, err := certificate.MakeBaseCertFromPemBytesRaw(nil, converter)
+	assert.ErrorContains(t, err, "pemBytes cannot be nil")
+	assert.Equal(t, certificate.BaseCert{}, cert)
+
+	converter.AssertExpectations(t)
+}
+
+func TestMakeBaseCertFromPemBytesRaw_PemToDerFails(t *testing.T) {
+	converter := new(mocks.Converter)
+	pemBytes := certificate.PemBytes("some PEM bytes")
+	expErr := errors.New("expected error")
+
+	converter.On("PemToDer", pemBytes).Return(nil, expErr)
+
+	cert, err := certificate.MakeBaseCertFromPemBytesRaw(pemBytes, converter)
+	assert.ErrorIs(t, err, expErr)
+	assert.Equal(t, certificate.BaseCert{}, cert)
+
+	converter.AssertExpectations(t)
+}
+
+func TestBaseCert_DerBytes_HappyPath(t *testing.T) {
+	converter := new(mocks.Converter)
+	derBytes := certificate.DerBytes("some DER bytes")
+
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
+	assert.NoError(t, err)
+	assert.Equal(t, cert.DerBytes(), derBytes)
+
+	converter.AssertExpectations(t)
+}
+
+func TestBaseCert_PemBytes_HappyPath(t *testing.T) {
+	converter := new(mocks.Converter)
+	derBytes := certificate.DerBytes("some DER bytes")
+	pemBytes := certificate.PemBytes("some PEM bytes")
+
+	converter.On("DerToPem", derBytes).Return(pemBytes, nil)
+
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
 	assert.NoError(t, err)
 
-	pemBytes, err := certificate.EncodeToMemory(cert.DerBytes())
+	outPemBytes, err := cert.PemBytes()
 	assert.NoError(t, err)
-	assert.NotNil(t, pemBytes)
+	assert.Equal(t, pemBytes, outPemBytes)
 
-	certificate.VerifyCert(t, cert)
+	converter.AssertExpectations(t)
 }
 
-func FuzzEncodeToMemory_NeverFails(f *testing.F) {
-	f.Add([]byte(""))
-	f.Fuzz(func(t *testing.T, derBytes []byte) {
-		pemBytes, err := certificate.EncodeToMemory(derBytes)
-		assert.NoError(t, err)
-		assert.NotNil(t, pemBytes)
-		// It is probably not possible for EncodeToMemory to fail, so if it
-		// does, we should investigate
-	})
+func TestBaseCert_PemBytes_FailDerToPem(t *testing.T) {
+	converter := new(mocks.Converter)
+	derBytes := certificate.DerBytes("some DER bytes")
+	expErr := errors.New("expected error")
+
+	converter.On("DerToPem", derBytes).Return(nil, expErr)
+
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
+	assert.NoError(t, err)
+
+	outPemBytes, err := cert.PemBytes()
+	assert.ErrorIs(t, err, expErr)
+	assert.Nil(t, outPemBytes)
+
+	converter.AssertExpectations(t)
 }
 
-func TestEncodeToMemoryThenPemToDer_Errors(t *testing.T) {
-	tests := map[string]struct {
-		derBytes []byte
-		errRegex string
-	}{
-		"malformed certificate": {
-			derBytes: []byte{},
-			errRegex: "x509: malformed certificate",
-		},
-		"malformed tbs certificate": {
-			derBytes: bytes.Repeat([]byte{0x30}, 50),
-			errRegex: "x509: malformed tbs certificate",
-		},
-		"malformed serial number ": {
-			derBytes: append([]byte{0x30, 0x30, 0x30, 0x20}, bytes.Repeat([]byte{0x30}, 46)...),
-			errRegex: "x509: malformed serial number",
-		},
-	}
+func TestBaseCert_Digest_HappyPath(t *testing.T) {
+	converter := new(mocks.Converter)
+	derBytes := certificate.DerBytes("some DER bytes")
+	digestBytes := certificate.DigestBytes(sha256.Sum256(derBytes))
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			pemBytes, err := certificate.EncodeToMemory(tc.derBytes)
-			require.NoError(t, err)
-			require.NotNil(t, pemBytes)
-			_, err = certificate.PemToDer(pemBytes)
-			require.Error(t, err)
-			assert.Regexp(t, regexp.MustCompile(tc.errRegex), err.Error())
-		})
-	}
-}
+	converter.On("DerToDigest", derBytes).Return(digestBytes, nil)
 
-func FuzzEncodeToMemoryThenPemToDer(f *testing.F) {
-	tests := []struct {
-		badDerBytes []byte
-	}{
-		{[]byte("asdf:")},                // x509: malformed certificate
-		{bytes.Repeat([]byte{0x30}, 50)}, // x509: malformed tbs certificate
-		{append([]byte{0x30, 0x30, 0x30, 0x20}, bytes.Repeat([]byte{0x30}, 46)...)}, //x509: malformed serial number
-	}
-	for _, tc := range tests {
-		f.Add(tc.badDerBytes)
-	}
+	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
+	assert.NoError(t, err)
 
-	f.Fuzz(func(t *testing.T, badDerBytes []byte) {
-		pemBytes, err := certificate.EncodeToMemory(badDerBytes)
-		require.NoError(t, err)
-		require.NotNil(t, pemBytes)
-		_, pemToDerErr := certificate.PemToDer(pemBytes)
+	outDigestBytes := cert.Digest()
+	assert.Equal(
+		t,
+		certificate.DigestBytes(sha256.Sum256(derBytes)),
+		outDigestBytes,
+	)
 
-		ok, err := nitridingtest.ErrorMatchesPattern(
-			pemToDerErr,
-			"x509: malformed certificate",
-			"x509: malformed tbs certificate",
-			"x509: malformed serial number",
-		)
-		assert.NoError(t, err)
-		assert.Truef(t, ok, "derBytes '%#v', err %v", badDerBytes, pemToDerErr)
-	})
+	converter.AssertExpectations(t)
 }

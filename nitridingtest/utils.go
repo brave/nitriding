@@ -3,8 +3,6 @@ package nitridingtest
 import (
 	"errors"
 	"regexp"
-	"runtime"
-	"strings"
 )
 
 func ErrorMatchesPattern(err error, regexStrs ...string) (bool, error) {
@@ -22,12 +20,4 @@ func ErrorMatchesPattern(err error, regexStrs ...string) (bool, error) {
 		}
 	}
 	return false, nil
-}
-
-func ReflectTestName() string {
-	pc := make([]uintptr, 1)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	components := strings.Split(f.Name(), ".")
-	return components[len(components)-1]
 }

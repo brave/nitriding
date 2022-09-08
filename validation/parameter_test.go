@@ -5,14 +5,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/blocky/nitriding/mocks"
-	"github.com/blocky/nitriding/validation"
+	"github.com/brave/nitriding/mocks"
+	"github.com/brave/nitriding/validation"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateAndDecode_HappyPath(t *testing.T) {
 	value := "abcdef1234567890"
-	validator := new(mocks.Validator)
+	validator := new(mocks.StringValidator)
 
 	validator.On("Validate", value).Return(nil)
 
@@ -30,7 +30,7 @@ func TestValidateAndDecode_ValidatorError(t *testing.T) {
 	value := "abcdef1234567890"
 	expErr := errors.New("expected error")
 
-	validator := new(mocks.Validator)
+	validator := new(mocks.StringValidator)
 
 	validator.On("Validate", value).Return(expErr)
 
@@ -42,7 +42,7 @@ func TestValidateAndDecode_ValidatorError(t *testing.T) {
 
 func TestValidateAndDecode_DecodeError(t *testing.T) {
 	value := "XXXX"
-	validator := new(mocks.Validator)
+	validator := new(mocks.StringValidator)
 
 	validator.On("Validate", value).Return(nil)
 

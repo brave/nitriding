@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/blocky/nitriding/nitridingtest"
-	"github.com/blocky/nitriding/validation"
+	"github.com/brave/nitriding/nitridingtest"
+	"github.com/brave/nitriding/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
