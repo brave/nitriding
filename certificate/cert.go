@@ -4,6 +4,11 @@ import (
 	"errors"
 )
 
+const (
+	ErrNilDERBytes = "DER bytes cannot be nil"
+	ErrNilPEMBytes = "PEM bytes cannot be nil"
+)
+
 type (
 	DigestBytes [32]byte
 	DerBytes    []byte
@@ -33,7 +38,7 @@ func MakeBaseCertFromDerBytesRaw(
 	error,
 ) {
 	if derBytes == nil {
-		return BaseCert{}, errors.New("derBytes cannot be nil")
+		return BaseCert{}, errors.New(ErrNilDERBytes)
 	}
 
 	return BaseCert{
@@ -63,7 +68,7 @@ func MakeBaseCertFromPemBytesRaw(
 	error,
 ) {
 	if pemBytes == nil {
-		return BaseCert{}, errors.New("pemBytes cannot be nil")
+		return BaseCert{}, errors.New(ErrNilPEMBytes)
 	}
 	derBytes, err := converter.PemToDer(pemBytes)
 	if err != nil {

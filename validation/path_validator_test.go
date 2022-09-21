@@ -11,13 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFileValidator_Validate_HappyPath(t *testing.T) {
-	fv := validation.MakeFileValidator(validation.LinuxFilePathRegex)
-	err := fv.Validate("ok_file_name")
-	assert.NoError(t, err)
+func TestFileValidator_Interfaces(t *testing.T) {
+	validator := validation.FileValidator{}
+	nitridingtest.AttestType[validation.PathValidator](t, validator)
 }
 
-func TestMakeFileValidator_Validate_Errors(t *testing.T) {
+func TestMakeFileValidator_Validate(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		fv := validation.MakeFileValidator(validation.LinuxFilePathRegex)
+		err := fv.Validate("ok_file_name")
+		assert.NoError(t, err)
+	})
+
 	tests := map[string]struct {
 		fileName string
 		errRegex string

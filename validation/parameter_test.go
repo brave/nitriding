@@ -10,44 +10,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateAndDecode_HappyPath(t *testing.T) {
-	value := "abcdef1234567890"
-	validator := new(mocks.StringValidator)
+func TestValidateAndDecode(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		value := "abcdef1234567890"
+		validator := new(mocks.StringValidator)
 
-	validator.On("Validate", value).Return(nil)
+		validator.On("Validate", value).Return(nil)
 
-	valueBytes, err := validation.ValidateAndDecode(value, validator)
-	assert.NoError(t, err)
+		valueBytes, err := validation.ValidateAndDecode(value, validator)
+		assert.NoError(t, err)
 
-	expBytes, err := hex.DecodeString(value)
-	assert.NoError(t, err)
-	assert.Equal(t, expBytes, valueBytes)
+		expBytes, err := hex.DecodeString(value)
+		assert.NoError(t, err)
+		assert.Equal(t, expBytes, valueBytes)
 
-	validator.AssertExpectations(t)
-}
+		validator.AssertExpectations(t)
+	})
 
-func TestValidateAndDecode_ValidatorError(t *testing.T) {
-	value := "abcdef1234567890"
-	expErr := errors.New("expected error")
+	t.Run("validator error", func(t *testing.T) {
+		value := "abcdef1234567890"
+		expErr := errors.New("expected error")
 
-	validator := new(mocks.StringValidator)
+		validator := new(mocks.StringValidator)
 
-	validator.On("Validate", value).Return(expErr)
+		validator.On("Validate", value).Return(expErr)
 
-	_, err := validation.ValidateAndDecode(value, validator)
-	assert.ErrorIs(t, err, expErr)
+		_, err := validation.ValidateAndDecode(value, validator)
+		assert.ErrorIs(t, err, expErr)
 
-	validator.AssertExpectations(t)
-}
+		validator.AssertExpectations(t)
+	})
 
-func TestValidateAndDecode_DecodeError(t *testing.T) {
-	value := "XXXX"
-	validator := new(mocks.StringValidator)
+	t.Run("decode error", func(t *testing.T) {
+		value := "XXXX"
+		validator := new(mocks.StringValidator)
 
-	validator.On("Validate", value).Return(nil)
+		validator.On("Validate", value).Return(nil)
 
-	_, err := validation.ValidateAndDecode(value, validator)
-	assert.ErrorContains(t, err, "invalid byte")
+		_, err := validation.ValidateAndDecode(value, validator)
+		assert.ErrorContains(t, err, validation.ErrDecode)
 
-	validator.AssertExpectations(t)
+		validator.AssertExpectations(t)
+	})
 }

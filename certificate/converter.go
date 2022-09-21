@@ -5,6 +5,14 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
+)
+
+const (
+	ErrNoPEMData = "no PEM data found"
+	ErrDERParse  = "could not parse out DER bytes"
+	ErrPEMEncode = "could not encode DER bytes to PEM bytes"
+	ErrCertParse = "could not parse Certificate"
 )
 
 type Converter interface {
@@ -25,12 +33,12 @@ func (converter BaseConverter) PemToDer(pemBytes PemBytes) (DerBytes, error) {
 	for len(pemBytes) > 0 {
 		block, rest := pem.Decode(pemBytes)
 		if block == nil {
-			return DerBytes{}, errors.New("no PEM data found")
+			return DerBytes{}, errors.New(ErrNoPEMData)
 		}
 		if block.Type == "CERTIFICATE" {
 			cert, err := x509.ParseCertificate(block.Bytes)
 			if err != nil {
-				return DerBytes{}, err
+				return DerBytes{}, fmt.Errorf("%v: %w", ErrCertParse, err)
 			}
 			if !cert.IsCA || converter.allowCA {
 				return cert.Raw, nil
@@ -39,7 +47,7 @@ func (converter BaseConverter) PemToDer(pemBytes PemBytes) (DerBytes, error) {
 		pemBytes = rest
 	}
 
-	return DerBytes{}, errors.New("could not parse out DER bytes")
+	return DerBytes{}, errors.New(ErrDERParse)
 }
 
 func (_ BaseConverter) DerToPem(derBytes DerBytes) (PemBytes, error) {
@@ -48,7 +56,7 @@ func (_ BaseConverter) DerToPem(derBytes DerBytes) (PemBytes, error) {
 		Bytes: derBytes,
 	})
 	if pemCert == nil {
-		return nil, errors.New("failed to encode certificate")
+		return nil, errors.New(ErrPEMEncode)
 	}
 	return pemCert, nil
 }

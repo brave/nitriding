@@ -3,9 +3,15 @@ package validation_test
 import (
 	"testing"
 
+	"github.com/brave/nitriding/nitridingtest"
 	"github.com/brave/nitriding/validation"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestRegexStringValidator_Interfaces(t *testing.T) {
+	validator := validation.RegexStringValidator{}
+	nitridingtest.AttestType[validation.StringValidator](t, validator)
+}
 
 func TestBaseParamValidator_Validate(t *testing.T) {
 	tests := map[string]struct {

@@ -9,8 +9,15 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"math/big"
 	"time"
+)
+
+const (
+	ErrNilPrivateKey = "cert private key cannot be nil"
+	ErrPriKeyMarshal = "could not marshal private key"
+	ErrPriKeyEncode  = "could not encode private key"
 )
 
 const certificateValidity = time.Hour * 24 * 356
@@ -36,12 +43,13 @@ type BasePrivilegedCertBuilder struct {
 }
 
 func (builder BasePrivilegedCertBuilder) MakePrivilegedCert() (PrivilegedCert, error) {
-	return MakeBasePrivilegedCert(builder.CertOrg, builder.FQDN)
+	return MakeBasePrivilegedCert(builder.CertOrg, builder.FQDN, true)
 }
 
 func MakeBasePrivilegedCert(
 	certOrg string,
 	fqdn string,
+	isCA bool,
 ) (
 	BasePrivilegedCert,
 	error,
@@ -69,7 +77,7 @@ func MakeBasePrivilegedCert(
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 		SignatureAlgorithm:    x509.ECDSAWithSHA384,
-		IsCA:                  true,
+		IsCA:                  isCA,
 	}
 
 	var derBytes DerBytes
@@ -119,19 +127,18 @@ func (cert BasePrivilegedCert) PrivateKey() *ecdsa.PrivateKey {
 
 func (cert BasePrivilegedCert) TLSCertificate() (tls.Certificate, error) {
 	if cert.privateKey == nil {
-		return tls.Certificate{}, errors.New("cert.privateKey cannot be nil")
+		return tls.Certificate{}, errors.New(ErrNilPrivateKey)
 	}
 
 	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(cert.privateKey)
 	if err != nil {
-		return tls.Certificate{}, err
+		return tls.Certificate{}, fmt.Errorf("%v: %w", ErrPriKeyMarshal, err)
 	}
 	pemKey := pem.EncodeToMemory(
 		&pem.Block{Type: "PRIVATE KEY", Bytes: privateKeyBytes},
 	)
 	if pemKey == nil {
-		return tls.Certificate{},
-			errors.New("could not encode private key to memory")
+		return tls.Certificate{}, errors.New(ErrPriKeyEncode)
 	}
 
 	pemCert, err := cert.PemBytes()

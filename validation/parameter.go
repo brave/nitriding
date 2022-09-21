@@ -2,7 +2,10 @@ package validation
 
 import (
 	"encoding/hex"
+	"fmt"
 )
+
+const ErrDecode = "could not decode param"
 
 func ValidateAndDecode(
 	paramString string,
@@ -16,5 +19,9 @@ func ValidateAndDecode(
 		return nil, err
 	}
 
-	return hex.DecodeString(paramString)
+	bytes, err := hex.DecodeString(paramString)
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", ErrDecode, err)
+	}
+	return bytes, nil
 }

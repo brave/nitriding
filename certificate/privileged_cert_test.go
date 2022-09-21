@@ -15,21 +15,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMakeBasePrivilegedCert_HappyPath(t *testing.T) {
-	cert, err := certificate.MakeBasePrivilegedCert("", "")
-	assert.NoError(t, err)
-	assert.NotNil(t, cert)
-
-	VerifyCert(t, cert)
-
-	parsedCert, err := x509.ParseCertificate(cert.DerBytes())
-	assert.NoError(t, err)
-	privateKey := cert.PrivateKey()
-	require.NoError(t, err)
-	assert.Equal(t, parsedCert.PublicKey, &privateKey.PublicKey)
+func TestBasePrivilegedCert_Interfaces(t *testing.T) {
+	cert := certificate.BasePrivilegedCert{}
+	nitridingtest.AttestType[certificate.PrivilegedCert](t, cert)
 }
 
-func TestMakeBasePrivilegedCert_Errors(t *testing.T) {
+func TestMakeBasePrivilegedCert(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
+		assert.NoError(t, err)
+		assert.NotNil(t, cert)
+
+		VerifyCert(t, cert)
+
+		parsedCert, err := x509.ParseCertificate(cert.DerBytes())
+		assert.NoError(t, err)
+		privateKey := cert.PrivateKey()
+		require.NoError(t, err)
+		assert.Equal(t, parsedCert.PublicKey, &privateKey.PublicKey)
+	})
+
 	tests := map[string]struct {
 		certOrg  string
 		fqdn     string
@@ -40,7 +45,7 @@ func TestMakeBasePrivilegedCert_Errors(t *testing.T) {
 			fqdn:     "",
 			errRegex: "asn1: string not valid UTF-8",
 		},
-		"bad FQDN": {
+		"bad fqdn": {
 			certOrg:  "",
 			fqdn:     "\xff",
 			errRegex: "x509: .* cannot be encoded as an IA5String",
@@ -49,7 +54,10 @@ func TestMakeBasePrivilegedCert_Errors(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			cert, err := certificate.MakeBasePrivilegedCert(tc.certOrg, tc.fqdn)
+			cert, err := certificate.BasePrivilegedCertBuilder{
+				CertOrg: tc.certOrg,
+				FQDN:    tc.fqdn,
+			}.MakePrivilegedCert()
 			assert.Error(t, err)
 			assert.Regexp(t, regexp.MustCompile(tc.errRegex), err.Error())
 			assert.Equal(t, certificate.BasePrivilegedCert{}, cert)
@@ -70,7 +78,10 @@ func FuzzMakeBasePrivilegedCert(f *testing.F) {
 		f.Add(tc.certOrg, tc.fqdn)
 	}
 	f.Fuzz(func(t *testing.T, certOrg string, fqdn string) {
-		cert, makeErr := certificate.MakeBasePrivilegedCert(certOrg, fqdn)
+		cert, makeErr := certificate.BasePrivilegedCertBuilder{
+			CertOrg: certOrg,
+			FQDN:    fqdn,
+		}.MakePrivilegedCert()
 		if makeErr == nil {
 			VerifyCert(t, cert)
 		} else {
@@ -82,12 +93,12 @@ func FuzzMakeBasePrivilegedCert(f *testing.F) {
 				"x509: .* cannot be encoded as an IA5String",
 			)
 			assert.NoError(t, err)
-			assert.Truef(t, ok, "CertOrg '%v', FQDN '%#v', error '%v'", certOrg, fqdn, makeErr)
+			assert.Truef(t, ok, "CertOrg '%v', fqdn '%#v', error '%v'", certOrg, fqdn, makeErr)
 		}
 	})
 }
 
-func TestBasePrivilegedCert_PrivateKey_HappyPath(t *testing.T) {
+func TestBasePrivilegedCert_PrivateKey(t *testing.T) {
 	derBytes := certificate.DerBytes("some DER bytes")
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
@@ -105,38 +116,40 @@ func TestBasePrivilegedCert_PrivateKey_HappyPath(t *testing.T) {
 	assert.Equal(t, *privateKey, *outPrivateKey)
 }
 
-func TestMakeTLSCertificate_HappyPath(t *testing.T) {
-	cert, err := certificate.MakeBasePrivilegedCert("", "")
-	assert.NoError(t, err)
-	VerifyCert(t, cert)
+func TestBasePrivilegedCert_TLSCertificate(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
+		assert.NoError(t, err)
+		VerifyCert(t, cert)
 
-	tlsCert, err := cert.TLSCertificate()
-	assert.NoError(t, err)
-	assert.Equal(t, cert.PrivateKey(), tlsCert.PrivateKey)
-}
+		tlsCert, err := cert.TLSCertificate()
+		assert.NoError(t, err)
+		assert.Equal(t, cert.PrivateKey(), tlsCert.PrivateKey)
+	})
 
-func TestBasePrivilegedCert_TLSCertificate_NilCertPrivateKey(t *testing.T) {
-	cert, err := certificate.MakeBasePrivilegedCertFromRaw(
-		certificate.DerBytes{},
-		certificate.BaseConverter{},
-		nil,
-	)
-	assert.NoError(t, err)
+	t.Run("nil Cert private key", func(t *testing.T) {
+		cert, err := certificate.MakeBasePrivilegedCertFromRaw(
+			certificate.DerBytes{},
+			certificate.BaseConverter{},
+			nil,
+		)
+		assert.NoError(t, err)
 
-	tlsCert, err := cert.TLSCertificate()
-	assert.ErrorContains(t, err, "privateKey cannot be nil")
-	assert.Equal(t, tls.Certificate{}, tlsCert)
-}
+		tlsCert, err := cert.TLSCertificate()
+		assert.ErrorContains(t, err, certificate.ErrNilPrivateKey)
+		assert.Equal(t, tls.Certificate{}, tlsCert)
+	})
 
-func TestBasePrivilegedCert_TLSCertificate_BadCertPrivateKey(t *testing.T) {
-	cert, err := certificate.MakeBasePrivilegedCertFromRaw(
-		certificate.DerBytes{},
-		certificate.BaseConverter{},
-		&ecdsa.PrivateKey{},
-	)
-	assert.NoError(t, err)
+	t.Run("bad Cert private key", func(t *testing.T) {
+		cert, err := certificate.MakeBasePrivilegedCertFromRaw(
+			certificate.DerBytes{},
+			certificate.BaseConverter{},
+			&ecdsa.PrivateKey{},
+		)
+		assert.NoError(t, err)
 
-	tlsCert, err := cert.TLSCertificate()
-	assert.ErrorContains(t, err, "x509: unknown curve while marshaling")
-	assert.Equal(t, tls.Certificate{}, tlsCert)
+		tlsCert, err := cert.TLSCertificate()
+		assert.ErrorContains(t, err, certificate.ErrPriKeyMarshal)
+		assert.Equal(t, tls.Certificate{}, tlsCert)
+	})
 }
