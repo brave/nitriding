@@ -22,7 +22,7 @@ func TestBaseAttesterHelper_MarshalCBOR(t *testing.T) {
 
 	cborBytes, err := attestation.BaseAttesterHelper{}.MarshalCBOR(obj)
 	assert.NoError(t, err)
-	assert.Equal(t, cborBytesExp, cborBytes)
+	assert.Equal(t, attestation.CBOR(cborBytesExp), cborBytes)
 }
 
 func TestBaseAttesterHelper_MakePCRs(t *testing.T) {
@@ -52,11 +52,13 @@ func FuzzBaseAttesterHelper_MakeCOSEMessage(f *testing.F) {
 	require.NotNil(f, coseVerifier)
 	helper := attestation.BaseAttesterHelper{}
 
-	f.Fuzz(func(t *testing.T, payload []byte) {
-		coseMsg, err := helper.MakeCOSEMessage(payload, privateKey)
-		assert.NoError(t, err)
-		require.NotNil(t, coseMsg)
-		assert.Equal(t, payload, coseMsg.Payload)
-		assert.NoError(t, coseMsg.Verify(nil, coseVerifier))
-	})
+	f.Fuzz(
+		func(t *testing.T, payload []byte) {
+			coseMsg, err := helper.MakeCOSEMessage(payload, privateKey)
+			assert.NoError(t, err)
+			require.NotNil(t, coseMsg)
+			assert.Equal(t, payload, coseMsg.Payload)
+			assert.NoError(t, coseMsg.Verify(nil, coseVerifier))
+		},
+	)
 }

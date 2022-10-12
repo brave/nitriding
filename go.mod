@@ -22,4 +22,5 @@ require (
 )
 
 replace github.com/hf/nitrite => github.com/blocky/nitrite v0.0.2-0.20220831170244-e4b0083dd2fc
+
 replace github.com/hf/nsm => github.com/blocky/nsm v0.0.0-20220902220237-de4e289e7f0c

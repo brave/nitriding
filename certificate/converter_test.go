@@ -173,7 +173,7 @@ func FuzzBaseConverter_DerToPem(f *testing.F) {
 	})
 }
 
-func TestBaseConverter_DerToPemThenPemToDer(t *testing.T) {
+func TestBaseConverter_FullDerToPemThenPemToDer(t *testing.T) {
 	tests := map[string]struct {
 		derBytes []byte
 		errRegex string
@@ -208,15 +208,16 @@ func TestBaseConverter_DerToPemThenPemToDer(t *testing.T) {
 	}
 }
 
-func FuzzBaseConverter_DerToPemThenPemToDer(f *testing.F) {
+func FuzzBaseConverter_FullDerToPemThenPemToDer(f *testing.F) {
 	tests := []struct {
 		badDerBytes []byte
 	}{
 		{[]byte("asdf:")},                // x509: malformed certificate
 		{bytes.Repeat([]byte{0x30}, 50)}, // x509: malformed tbs certificate
-		{append(
-			[]byte{0x30, 0x30, 0x30, 0x20},
-			bytes.Repeat([]byte{0x30}, 46)...),
+		{
+			append(
+				[]byte{0x30, 0x30, 0x30, 0x20},
+				bytes.Repeat([]byte{0x30}, 46)...),
 		}, //x509: malformed serial number
 	}
 	for _, tc := range tests {

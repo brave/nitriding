@@ -5,5 +5,5 @@ import (
 )
 
 type Checker interface {
-	CheckAttestDoc(attestDoc Doc) (*nitrite.Result, error)
+	CheckAttestDoc(attestDoc CBOR) (*nitrite.Result, error)
 }

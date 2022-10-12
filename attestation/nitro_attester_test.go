@@ -15,7 +15,6 @@ import (
 	"github.com/hf/nsm/response"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNitroAttester_Interfaces(t *testing.T) {
@@ -89,8 +88,7 @@ func TestMakeNitroAttester(t *testing.T) {
 
 type NitroAttesterParlor struct {
 	parlor.Parlor
-	attest              attestation.Doc
-	document            []byte
+	attestDoc           attestation.CBOR
 	expErr              error
 	keyBytes            []byte
 	nonce               []byte
@@ -116,10 +114,9 @@ func (p *NitroAttesterParlor) SetupTest() {
 		Sig:  nil,
 	}
 	p.signedUserDataBytes, err = json.Marshal(signedUserData)
-	require.NoError(p.T(), err)
+	p.Require().NoError(err)
 	p.keyBytes = []byte("key bytes")
-	p.document = []byte("document")
-	p.attest = attestation.Doc{CBOR: p.document}
+	p.attestDoc = attestation.CBOR("attestDoc")
 	p.expErr = errors.New("expected error")
 }
 
@@ -136,30 +133,36 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 			PublicKey: p.keyBytes,
 		}
 		attestRes := response.Response{
-			Attestation: &response.Attestation{Document: p.document},
+			Attestation: &response.Attestation{Document: p.attestDoc},
 		}
 
 		p.signer.On("Sign", p.userData).Return(p.signedUserDataBytes, nil)
 		p.signer.On("MarshalPublicKey").Return(p.keyBytes)
 		p.nsmSession.On("Send", &attestReq).Return(attestRes, nil)
 
-		attester, err := attestation.MakeNitroAttester(p.nsmSession, p.signer)
-		assert.NoError(p.T(), err)
+		attester, err := attestation.MakeNitroAttester(
+			p.nsmSession,
+			p.signer,
+		)
+		p.NoError(err)
 
-		attest, err := attester.GetAttestDoc(p.nonce, p.userData)
-		assert.NoError(p.T(), err)
-		assert.Equal(p.T(), p.attest, attest)
+		attestDoc, err := attester.GetAttestDoc(p.nonce, p.userData)
+		p.NoError(err)
+		p.Equal(p.attestDoc, attestDoc)
 	}, p)
 
 	p.Run("signer.Sign error", func() {
 		p.signer.On("Sign", p.userData).Return(nil, p.expErr)
 
-		attester, err := attestation.MakeNitroAttester(p.nsmSession, p.signer)
-		assert.NoError(p.T(), err)
+		attester, err := attestation.MakeNitroAttester(
+			p.nsmSession,
+			p.signer,
+		)
+		p.NoError(err)
 
-		attest, err := attester.GetAttestDoc(p.nonce, p.userData)
-		assert.ErrorIs(p.T(), err, p.expErr)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(p.nonce, p.userData)
+		p.ErrorIs(err, p.expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("session.Send error", func() {
@@ -170,28 +173,37 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 			p.expErr,
 		)
 
-		attester, err := attestation.MakeNitroAttester(p.nsmSession, p.signer)
-		assert.NoError(p.T(), err)
+		attester, err := attestation.MakeNitroAttester(
+			p.nsmSession,
+			p.signer,
+		)
+		p.NoError(err)
 
-		attest, err := attester.GetAttestDoc(p.nonce, p.userData)
-		assert.ErrorIs(p.T(), err, p.expErr)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(p.nonce, p.userData)
+		p.ErrorIs(err, p.expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("session.Send returns nil attestation", func() {
 		p.signer.On("Sign", p.userData).Return(p.signedUserDataBytes, nil)
 		p.signer.On("MarshalPublicKey").Return(p.keyBytes)
-		p.nsmSession.On("Send", mock.Anything).Return(response.Response{}, nil)
+		p.nsmSession.On("Send", mock.Anything).Return(
+			response.Response{},
+			nil,
+		)
 
-		attester, err := attestation.MakeNitroAttester(p.nsmSession, p.signer)
-		assert.NoError(p.T(), err)
+		attester, err := attestation.MakeNitroAttester(
+			p.nsmSession,
+			p.signer,
+		)
+		p.NoError(err)
 
-		attest, err := attester.GetAttestDoc(p.nonce, p.userData)
-		assert.ErrorContains(p.T(), err, attestation.ErrNSM)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(p.nonce, p.userData)
+		p.ErrorContains(err, attestation.ErrNSM)
+		p.Nil(attestDoc)
 	}, p)
 
-	p.Run("session.Send returns nil document", func() {
+	p.Run("session.Send returns nil attestDoc", func() {
 		p.signer.On("Sign", p.userData).Return(p.signedUserDataBytes, nil)
 		p.signer.On("MarshalPublicKey").Return(p.keyBytes)
 		p.nsmSession.On("Send", mock.Anything).Return(
@@ -201,12 +213,15 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 			nil,
 		)
 
-		attester, err := attestation.MakeNitroAttester(p.nsmSession, p.signer)
-		assert.NoError(p.T(), err)
+		attester, err := attestation.MakeNitroAttester(
+			p.nsmSession,
+			p.signer,
+		)
+		p.NoError(err)
 
-		attest, err := attester.GetAttestDoc(p.nonce, p.userData)
-		assert.ErrorContains(p.T(), err, attestation.ErrNSM)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(p.nonce, p.userData)
+		p.ErrorContains(err, attestation.ErrNSM)
+		p.Nil(attestDoc)
 	}, p)
 
 }

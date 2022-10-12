@@ -33,12 +33,19 @@ func MakeStandaloneChecker(cert certificate.Cert) (StandaloneChecker, error) {
 	return StandaloneChecker{roots: roots}, nil
 }
 
-func (c StandaloneChecker) CheckAttestDoc(doc Doc) (*nitrite.Result, error) {
-	res, err := nitrite.Verify(doc.CBOR, nitrite.VerifyOptions{
-		Roots:               c.roots,
-		CurrentTime:         time.Now(),
-		AllowSelfSignedCert: true,
-	})
+func (c StandaloneChecker) CheckAttestDoc(
+	attestDoc CBOR,
+) (
+	*nitrite.Result,
+	error,
+) {
+	res, err := nitrite.Verify(
+		attestDoc, nitrite.VerifyOptions{
+			Roots:               c.roots,
+			CurrentTime:         time.Now(),
+			AllowSelfSignedCert: true,
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", ErrDocVerify, err)
 	}

@@ -77,12 +77,13 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		nonce := nitridingtest.MakeRandBytes(t, 20)
 		userData := nitridingtest.MakeRandBytes(t, 20)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
 		assert.NoError(t, err)
+		require.NotNil(t, attestDoc)
 
 		checker, err := attestation.MakeStandaloneChecker(cert)
 		assert.NoError(t, err)
-		doc, err := checker.CheckAttestDoc(attest)
+		doc, err := checker.CheckAttestDoc(attestDoc)
 		assert.NoError(t, err)
 		assert.Equal(t, nonce, doc.Document.Nonce)
 		attestPublicKey, err := x509.ParsePKCS1PublicKey(doc.Document.PublicKey)
@@ -93,7 +94,7 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		assert.Equal(t, userData, verifiedData)
 	})
 
-	t.Run("nil Doc CBOR", func(t *testing.T) {
+	t.Run("nil attestation document", func(t *testing.T) {
 		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
 		assert.NoError(t, err)
 		require.NotNil(t, cert)
@@ -102,12 +103,12 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		assert.NoError(t, err)
 		require.NotEqual(t, attestation.StandaloneChecker{}, checker)
 
-		result, err := checker.CheckAttestDoc(attestation.Doc{CBOR: nil})
+		result, err := checker.CheckAttestDoc(nil)
 		assert.ErrorContains(t, err, attestation.ErrDocVerify)
 		assert.Nil(t, result)
 	})
 
-	t.Run("empty Doc CBOR", func(t *testing.T) {
+	t.Run("empty attestation document", func(t *testing.T) {
 		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
 		assert.NoError(t, err)
 		require.NotNil(t, cert)
@@ -116,7 +117,7 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		assert.NoError(t, err)
 		require.NotEqual(t, attestation.StandaloneChecker{}, checker)
 
-		result, err := checker.CheckAttestDoc(attestation.Doc{CBOR: nil})
+		result, err := checker.CheckAttestDoc(attestation.CBOR{})
 		assert.ErrorContains(t, err, attestation.ErrDocVerify)
 		assert.Nil(t, result)
 	})
@@ -132,11 +133,12 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		nonce := nitridingtest.MakeRandBytes(t, 20)
 		userData := nitridingtest.MakeRandBytes(t, 20)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
 		assert.NoError(t, err)
+		require.NotNil(t, attestDoc)
 
 		checker := attestation.StandaloneChecker{}
-		res, err := checker.CheckAttestDoc(attest)
+		res, err := checker.CheckAttestDoc(attestDoc)
 		require.NoError(t, err)
 		assert.NotNil(t, res)
 	})

@@ -61,27 +61,32 @@ func MakeNitroAttester(
 	}, nil
 }
 
-func (attester NitroAttester) GetAttestDoc(nonce, userData []byte) (Doc, error) {
+func (attester NitroAttester) GetAttestDoc(nonce, userData []byte) (CBOR, error) {
 	signedUserData, err := attester.signer.Sign(userData)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
-	res, err := attester.session.Send(&request.Attestation{
-		Nonce:     nonce,
-		UserData:  signedUserData,
-		PublicKey: attester.signer.MarshalPublicKey(),
-	})
+	res, err := attester.session.Send(
+		&request.Attestation{
+			Nonce:     nonce,
+			UserData:  signedUserData,
+			PublicKey: attester.signer.MarshalPublicKey(),
+		},
+	)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	if res.Attestation == nil || res.Attestation.Document == nil {
-		return Doc{}, errors.New(ErrNSM)
+		return nil, errors.New(ErrNSM)
 	}
 
-	return Doc{CBOR: res.Attestation.Document}, nil
+	return res.Attestation.Document, nil
 }
 
-func (attester NitroAttester) GetAttestCert() (certificate.PrivilegedCert, error) {
+func (attester NitroAttester) GetAttestCert() (
+	certificate.PrivilegedCert,
+	error,
+) {
 	return nil, errors.New(ErrNoNitroAttestCert)
 }

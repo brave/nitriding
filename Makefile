@@ -17,7 +17,7 @@ fuzz:
 	cd attestation/signature && go test -fuzz=FuzzPSSSigner_Sign -fuzztime=$(FUZZTIME)
 	cd certificate && go test -fuzz=FuzzBaseConverter_PemToDer -fuzztime=$(FUZZTIME)
 	cd certificate && go test -fuzz=FuzzBaseConverter_DerToPem -fuzztime=$(FUZZTIME)
-	cd certificate && go test -fuzz=FuzzBaseConverter_DerToPemThenPemToDer -fuzztime=$(FUZZTIME)
+	cd certificate && go test -fuzz=FuzzBaseConverter_FullDerToPemThenPemToDer -fuzztime=$(FUZZTIME)
 	cd certificate && go test -fuzz=FuzzMakeBasePrivilegedCert -fuzztime=$(FUZZTIME)
 	cd validation && go test -fuzz=FuzzFileValidator_Validate -parallel=1 -fuzztime=$(FUZZTIME)
 
@@ -31,3 +31,6 @@ test: $(godeps)
 clean:
 	go clean -fuzzcache
 	rm -rf mocks
+
+deep-clean: clean
+	go clean -fuzzcache

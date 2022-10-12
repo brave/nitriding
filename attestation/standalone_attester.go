@@ -65,27 +65,21 @@ func MakeStandaloneAttesterFromRaw(
 	return StandaloneAttester{signer: signer, cert: cert, helper: helper}
 }
 
-func (attester StandaloneAttester) GetAttestDoc(
-	nonce []byte,
-	userData []byte,
-) (
-	Doc,
-	error,
-) {
+func (attester StandaloneAttester) GetAttestDoc(nonce, userData []byte) (CBOR, error) {
 	coseHeader := nitrite.CoseHeader{Alg: COSEAlgorithm}
 	coseHeaderBytes, err := attester.helper.MarshalCBOR(coseHeader)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	pcrs, err := attester.helper.MakePCRs()
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	signedUserData, err := attester.signer.Sign(userData)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	doc := nitrite.Document{
@@ -101,13 +95,13 @@ func (attester StandaloneAttester) GetAttestDoc(
 	}
 	docBytes, err := attester.helper.MarshalCBOR(doc)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	privateKey := attester.cert.PrivateKey()
 	coseMsg, err := attester.helper.MakeCOSEMessage(docBytes, privateKey)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
 	cosePayload := nitrite.CosePayload{
@@ -117,14 +111,17 @@ func (attester StandaloneAttester) GetAttestDoc(
 		Signature:   coseMsg.Signature,
 	}
 
-	cborBytes, err := attester.helper.MarshalCBOR(cosePayload)
+	cosePayloadBytes, err := attester.helper.MarshalCBOR(cosePayload)
 	if err != nil {
-		return Doc{}, err
+		return nil, err
 	}
 
-	return Doc{CBOR: cborBytes}, nil
+	return cosePayloadBytes, nil
 }
 
-func (attester StandaloneAttester) GetAttestCert() (certificate.PrivilegedCert, error) {
+func (attester StandaloneAttester) GetAttestCert() (
+	certificate.PrivilegedCert,
+	error,
+) {
 	return attester.cert, nil
 }

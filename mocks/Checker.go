@@ -15,11 +15,11 @@ type Checker struct {
 }
 
 // CheckAttestDoc provides a mock function with given fields: attestDoc
-func (_m *Checker) CheckAttestDoc(attestDoc attestation.Doc) (*nitrite.Result, error) {
+func (_m *Checker) CheckAttestDoc(attestDoc attestation.CBOR) (*nitrite.Result, error) {
 	ret := _m.Called(attestDoc)
 
 	var r0 *nitrite.Result
-	if rf, ok := ret.Get(0).(func(attestation.Doc) *nitrite.Result); ok {
+	if rf, ok := ret.Get(0).(func(attestation.CBOR) *nitrite.Result); ok {
 		r0 = rf(attestDoc)
 	} else {
 		if ret.Get(0) != nil {
@@ -28,7 +28,7 @@ func (_m *Checker) CheckAttestDoc(attestDoc attestation.Doc) (*nitrite.Result, e
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(attestation.Doc) error); ok {
+	if rf, ok := ret.Get(1).(func(attestation.CBOR) error); ok {
 		r1 = rf(attestDoc)
 	} else {
 		r1 = ret.Error(1)

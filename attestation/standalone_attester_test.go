@@ -71,7 +71,10 @@ func TestStandaloneAttesterBuilder_MakeAttester(t *testing.T) {
 		signerBldr := new(mocks.SignerBuilder)
 		expErr := errors.New("expected error")
 
-		certBldr.On("MakePrivilegedCert").Return(certificate.BasePrivilegedCert{}, nil)
+		certBldr.On("MakePrivilegedCert").Return(
+			certificate.BasePrivilegedCert{},
+			nil,
+		)
 		signerBldr.On("MakeSigner").Return(nil, expErr)
 
 		attesterBuilder := attestation.StandaloneAttesterBuilder{
@@ -133,13 +136,14 @@ func TestStandaloneAttester_GetAttestDoc_NoMock(t *testing.T) {
 	nonce := nitridingtest.MakeRandBytes(t, 20)
 	userData := nitridingtest.MakeRandBytes(t, 20)
 
-	attest, err := attester.GetAttestDoc(nonce, userData)
+	attestDoc, err := attester.GetAttestDoc(nonce, userData)
 	assert.NoError(t, err)
+	require.NotNil(t, attestDoc)
 
 	checker, err := attestation.MakeStandaloneChecker(cert)
 	assert.NoError(t, err)
 
-	doc, err := checker.CheckAttestDoc(attest)
+	doc, err := checker.CheckAttestDoc(attestDoc)
 	assert.NoError(t, err)
 	assert.Equal(t, nonce, doc.Document.Nonce)
 
@@ -190,36 +194,36 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 
 	coseHeader := nitrite.CoseHeader{Alg: attestation.COSEAlgorithm}
 	coseHeaderBytes, err := helper.MarshalCBOR(coseHeader)
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), coseHeaderBytes)
+	p.Require().NoError(err)
+	p.Require().NotNil(coseHeaderBytes)
 
 	pcrs, err := helper.MakePCRs()
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), pcrs)
+	p.Require().NoError(err)
+	p.Require().NotNil(pcrs)
 
 	signer, err := signature.PPSSignerBuilder{KeyLen: 1024}.MakeSigner()
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), signer)
+	p.Require().NoError(err)
+	p.Require().NotNil(signer)
 
 	signedUserData, err := signer.Sign(userData)
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), signedUserData)
+	p.Require().NoError(err)
+	p.Require().NotNil(signedUserData)
 
 	cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), cert)
+	p.Require().NoError(err)
+	p.Require().NotNil(cert)
 
 	derBytes := cert.DerBytes()
-	require.NotNil(p.T(), derBytes)
+	p.Require().NotNil(derBytes)
 
 	publicKeyBytes := signer.MarshalPublicKey()
-	docBytes := []byte("doc bytes")
+	docBytes := attestation.CBOR("document bytes")
 	privateKey := cert.PrivateKey()
-	codePayloadBytes := []byte("cose payload bytes")
+	cosePayloadBytes := attestation.CBOR("cose payload bytes")
 
 	cborMsg, err := helper.MakeCOSEMessage(docBytes, privateKey)
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), cborMsg)
+	p.Require().NoError(err)
+	p.Require().NotNil(cborMsg)
 
 	expErr := errors.New("expected error")
 
@@ -234,26 +238,29 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.Document")).
 			Return(docBytes, nil)
 		p.cert.On("PrivateKey").Return(privateKey)
-		p.helper.On("MakeCOSEMessage", docBytes, privateKey).
+		p.helper.On("MakeCOSEMessage", []byte(docBytes), privateKey).
 			Return(cborMsg, nil)
-		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.CosePayload")).
-			Return(codePayloadBytes, nil)
+		p.helper.On(
+			"MarshalCBOR",
+			mock.AnythingOfType("nitrite.CosePayload"),
+		).Return(cosePayloadBytes, nil)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.NoError(p.T(), err)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attest.CBOR, codePayloadBytes)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.NoError(err)
+		p.Equal(cosePayloadBytes, attestDoc)
 	}, p)
 
 	p.Run("error marshalling COSE header", func() {
 		attester := p.makeAttester()
 
-		p.helper.On("MarshalCBOR", coseHeader).Return(coseHeaderBytes, expErr)
+		p.helper.On("MarshalCBOR", coseHeader).Return(
+			coseHeaderBytes,
+			expErr,
+		)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("error making PCRs", func() {
@@ -266,10 +273,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", coseHeader).Return(coseHeaderBytes, nil)
 		p.helper.On("MakePCRs").Return(pcrs, expErr)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("error signing user data", func() {
@@ -279,10 +285,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MakePCRs").Return(pcrs, nil)
 		p.signer.On("Sign", userData).Return(signedUserData, expErr)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("error marshalling doc", func() {
@@ -296,10 +301,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.Document")).
 			Return(docBytes, expErr)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("error making COSE message", func() {
@@ -313,13 +317,12 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.Document")).
 			Return(docBytes, nil)
 		p.cert.On("PrivateKey").Return(privateKey)
-		p.helper.On("MakeCOSEMessage", docBytes, privateKey).
+		p.helper.On("MakeCOSEMessage", []byte(docBytes), privateKey).
 			Return(nil, expErr)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 
 	p.Run("error marshalling COSE payload", func() {
@@ -333,25 +336,30 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.Document")).
 			Return(docBytes, nil)
 		p.cert.On("PrivateKey").Return(privateKey)
-		p.helper.On("MakeCOSEMessage", docBytes, privateKey).
+		p.helper.On("MakeCOSEMessage", []byte(docBytes), privateKey).
 			Return(cborMsg, nil)
-		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.CosePayload")).
+		p.helper.On(
+			"MarshalCBOR",
+			mock.AnythingOfType("nitrite.CosePayload"),
+		).
 			Return(nil, expErr)
 
-		attest, err := attester.GetAttestDoc(nonce, userData)
-		assert.ErrorIs(p.T(), err, expErr)
-		require.NotNil(p.T(), attest)
-		assert.Equal(p.T(), attestation.Doc{}, attest)
+		attestDoc, err := attester.GetAttestDoc(nonce, userData)
+		p.ErrorIs(err, expErr)
+		p.Nil(attestDoc)
 	}, p)
 }
 
 func TestStandaloneAttester_GetAttestCert(t *testing.T) {
 	inCert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
 	assert.NoError(t, err)
-	attester, err := attestation.MakeStandaloneAttester(mocks.NewSigner(t), inCert)
+	attester, err := attestation.MakeStandaloneAttester(
+		mocks.NewSigner(t),
+		inCert,
+	)
 	assert.NoError(t, err)
 	require.NotNil(t, attester)
-	outCert, err := attester.GetAttestCert()
+	outCert, _ := attester.GetAttestCert()
 	assert.NoError(t, err)
 	assert.Equal(t, inCert.DerBytes(), outCert.DerBytes())
 }

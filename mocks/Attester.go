@@ -38,14 +38,16 @@ func (_m *Attester) GetAttestCert() (certificate.PrivilegedCert, error) {
 }
 
 // GetAttestDoc provides a mock function with given fields: nonce, userData
-func (_m *Attester) GetAttestDoc(nonce []byte, userData []byte) (attestation.Doc, error) {
+func (_m *Attester) GetAttestDoc(nonce []byte, userData []byte) (attestation.CBOR, error) {
 	ret := _m.Called(nonce, userData)
 
-	var r0 attestation.Doc
-	if rf, ok := ret.Get(0).(func([]byte, []byte) attestation.Doc); ok {
+	var r0 attestation.CBOR
+	if rf, ok := ret.Get(0).(func([]byte, []byte) attestation.CBOR); ok {
 		r0 = rf(nonce, userData)
 	} else {
-		r0 = ret.Get(0).(attestation.Doc)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(attestation.CBOR)
+		}
 	}
 
 	var r1 error

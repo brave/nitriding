@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ErrCBORMarshal  = "could not marshal CBOR header"
+	ErrCBORMarshal  = "could not marshal CoseBytes header"
 	ErrPCRRead      = "could not read random PCR bytes"
 	ErrSignerCreate = "could not create COSE signer"
 	ErrMsgSign      = "could not sign COSE message"
@@ -24,7 +24,7 @@ const (
 )
 
 type AttesterHelper interface {
-	MarshalCBOR(obj any) (cborBytes []byte, err error)
+	MarshalCBOR(obj any) (cborBytes CBOR, err error)
 	MakePCRs() (pcrs map[uint][]byte, err error)
 	MakeCOSEMessage(
 		payload []byte,
@@ -38,7 +38,7 @@ type AttesterHelper interface {
 type BaseAttesterHelper struct {
 }
 
-func (_ BaseAttesterHelper) MarshalCBOR(obj any) ([]byte, error) {
+func (_ BaseAttesterHelper) MarshalCBOR(obj any) (CBOR, error) {
 	cborBytes, err := cbor.Marshal(obj)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", ErrCBORMarshal, err)
