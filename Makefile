@@ -6,6 +6,7 @@ all: test lint
 
 mock:
 	@mockery --all
+	@mockery --dir $(GOPATH)/pkg/mod/golang.org/x/crypto*/acme/autocert --name Cache
 	@mockery --dir $(GOPATH)/pkg/mod/github.com/blocky/nsm*/ --name NSMSession
 
 FUZZTIME=5s

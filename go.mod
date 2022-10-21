@@ -8,6 +8,7 @@ require (
 	github.com/go-ping/ping v1.1.0
 	github.com/hf/nitrite v0.0.0
 	github.com/hf/nsm v0.0.0
+	github.com/mdlayher/vsock v1.1.1
 	github.com/milosgajdos/tenus v0.0.3
 	github.com/stretchr/testify v1.8.0
 	github.com/veraison/go-cose v1.0.0-rc.1
@@ -19,11 +20,13 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/libcontainer v2.2.1+incompatible // indirect
 	github.com/google/uuid v1.2.0 // indirect
+	github.com/mdlayher/socket v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

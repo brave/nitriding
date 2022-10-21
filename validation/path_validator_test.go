@@ -18,7 +18,7 @@ func TestFileValidator_Interfaces(t *testing.T) {
 
 func TestMakeFileValidator_Validate(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		fv := validation.MakeFileValidator(validation.LinuxFilePathRegex)
+		fv := validation.MakeFileValidator(validation.FilePathRegex)
 		err := fv.Validate("ok_file_name")
 		assert.NoError(t, err)
 	})
@@ -45,7 +45,7 @@ func TestMakeFileValidator_Validate(t *testing.T) {
 		},
 	}
 
-	fv := validation.MakeFileValidator(validation.LinuxFilePathRegex)
+	fv := validation.MakeFileValidator(validation.FilePathRegex)
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -71,7 +71,7 @@ func FuzzFileValidator_Validate(f *testing.F) {
 		f.Add(tc.fileName)
 	}
 
-	fv := validation.MakeFileValidator(validation.LinuxFilePathRegex)
+	fv := validation.MakeFileValidator(validation.FilePathRegex)
 
 	f.Fuzz(func(t *testing.T, fileName string) {
 		validateErr := fv.Validate(fileName)

@@ -6,11 +6,11 @@ import (
 	"sync"
 )
 
+const ErrFileName = "file name not valid"
+
 type PathValidator interface {
 	Validate(path string) error
 }
-
-const LinuxFilePathRegex = "[A-Za-z0-9/._-]*[A-Za-z0-9_-]+"
 
 type FileValidator struct {
 	sv StringValidator
@@ -30,7 +30,7 @@ func (fv FileValidator) Validate(fileName string) error {
 	defer fileValidatorLock.Unlock()
 
 	if err := fv.sv.Validate(fileName); err != nil {
-		return fmt.Errorf("file name not valid: %w", err)
+		return fmt.Errorf("%v: %w", ErrFileName, err)
 	}
 
 	if _, err := os.Stat(fileName); err == nil {
