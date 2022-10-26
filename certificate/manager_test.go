@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/crypto/acme/autocert"
 
+	"github.com/brave/nitriding"
 	"github.com/brave/nitriding/certificate"
-	"github.com/brave/nitriding/common"
 	"github.com/brave/nitriding/mocks"
 	"github.com/brave/nitriding/nitridingtest"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ import (
 
 func TestACMECertMgrBuilder_Interfaces(t *testing.T) {
 	builder := certificate.ACMECertMgrBuilder{}
-	nitridingtest.AttestType[common.Builder[certificate.CertMgr]](t, builder)
+	nitridingtest.AttestType[nitriding.Builder[certificate.CertMgr]](t, builder)
 }
 
 func buildCertMgr(
@@ -50,16 +50,12 @@ func TestACMECertMgrBuilder_Build(t *testing.T) {
 	})
 
 	t.Run("cannot create listener", func(t *testing.T) {
-		certMgr, err := certificate.ACMECertMgrBuilder{Port: 1}.Build()
+		certMgr, err := certificate.ACMECertMgrBuilder{
+			InEnclave: true,
+			Port:      1,
+		}.Build()
 		assert.ErrorContains(t, err, certificate.ErrListener)
-		assert.ErrorContains(t, err, "bind: permission denied")
-		assert.Nil(t, certMgr)
-	})
-
-	t.Run("bad cert cache directory", func(t *testing.T) {
-		certMgrBuilder := certificate.ACMECertMgrBuilder{CertCacheDir: "*"}
-		certMgr, err := certMgrBuilder.Build()
-		assert.ErrorContains(t, err, certificate.ErrCacheDir)
+		assert.ErrorContains(t, err, "vsock")
 		assert.Nil(t, certMgr)
 	})
 }

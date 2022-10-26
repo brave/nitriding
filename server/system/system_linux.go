@@ -7,13 +7,6 @@ import (
 	"github.com/milosgajdos/tenus"
 )
 
-const (
-	ErrLinkCreate  = "could not create link to the loopback interface"
-	ErrSubnetParse = "could not parse link source subnet"
-	ErrLinkIP      = "could not link source subnet to the loopback interface"
-	ErrLinkUp      = "could not stand up link"
-)
-
 // AssignLoAddr assigns an IP address to the loopback interface, which is
 // necessary because Nitro enclaves don't do that out-of-the-box.  We need the
 // loopback interface because we run a simple TCP proxy that listens on

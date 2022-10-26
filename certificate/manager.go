@@ -12,12 +12,10 @@ import (
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
 
-	"github.com/brave/nitriding/validation"
 	"github.com/mdlayher/vsock"
 )
 
 const (
-	ErrCacheDir         = "invalid cache directory name"
 	ErrFQDNWhitelist    = "fqdn not in certificate manager whitelist"
 	ErrListener         = "failed to create an HTTP-01 challenge listener"
 	ErrGetCertFromCache = "could not get a certificate from cache"
@@ -85,11 +83,6 @@ func MakeACMECertMgr(
 	ACMECertMgr,
 	error,
 ) {
-	pathValidator := validation.MakeFileValidator(validation.DirectoryPathRegex)
-	if err := pathValidator.Validate(certCacheDir); err != nil {
-		return ACMECertMgr{}, fmt.Errorf("%v: %w", ErrCacheDir, err)
-	}
-
 	var listener net.Listener
 	var err error
 	if inEnclave {

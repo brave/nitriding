@@ -1,4 +1,4 @@
-package common
+package nitriding
 
 type Builder[T any] interface {
 	Build() (T, error)

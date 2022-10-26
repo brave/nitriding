@@ -96,17 +96,18 @@ func TestAssignLoAddr(t *testing.T) {
 			"Checking if %v is assigned to the loopback interface anyway",
 			system.LocalHostAddr,
 		)
+
+		pinger, err := ping.NewPinger(system.LocalHostAddr)
+		assert.NoError(t, err)
+		pinger.Count = 1
+		err = pinger.Run()
+		require.NoError(t, err)
+		t.Logf(
+			"%v is assigned to the loopback interface",
+			system.LocalHostAddr,
+		)
 	} else {
 		require.NoError(t, err)
 	}
 
-	pinger, err := ping.NewPinger(system.LocalHostAddr)
-	assert.NoError(t, err)
-	pinger.Count = 1
-	err = pinger.Run()
-	require.NoError(t, err)
-	t.Logf(
-		"%v is assigned to the loopback interface",
-		system.LocalHostAddr,
-	)
 }

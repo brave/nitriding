@@ -25,7 +25,7 @@ func getPemBytes(
 }
 
 func makeCACert(t *testing.T) certificate.PrivilegedCert {
-	cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
+	cert, err := certificate.BasePrivilegedCertBuilder{}.Build()
 	require.NoError(t, err)
 	return cert
 }

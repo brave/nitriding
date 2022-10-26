@@ -4,8 +4,6 @@ package mocks
 
 import (
 	attestation "github.com/brave/nitriding/attestation"
-	certificate "github.com/brave/nitriding/certificate"
-
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -14,36 +12,13 @@ type Attester struct {
 	mock.Mock
 }
 
-// GetAttestCert provides a mock function with given fields:
-func (_m *Attester) GetAttestCert() (certificate.PrivilegedCert, error) {
-	ret := _m.Called()
-
-	var r0 certificate.PrivilegedCert
-	if rf, ok := ret.Get(0).(func() certificate.PrivilegedCert); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(certificate.PrivilegedCert)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAttestDoc provides a mock function with given fields: nonce, userData
-func (_m *Attester) GetAttestDoc(nonce []byte, userData []byte) (attestation.CBOR, error) {
-	ret := _m.Called(nonce, userData)
+// GetAttestDoc provides a mock function with given fields: nonce, publicKey, userData
+func (_m *Attester) GetAttestDoc(nonce []byte, publicKey []byte, userData []byte) (attestation.CBOR, error) {
+	ret := _m.Called(nonce, publicKey, userData)
 
 	var r0 attestation.CBOR
-	if rf, ok := ret.Get(0).(func([]byte, []byte) attestation.CBOR); ok {
-		r0 = rf(nonce, userData)
+	if rf, ok := ret.Get(0).(func([]byte, []byte, []byte) attestation.CBOR); ok {
+		r0 = rf(nonce, publicKey, userData)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(attestation.CBOR)
@@ -51,8 +26,8 @@ func (_m *Attester) GetAttestDoc(nonce []byte, userData []byte) (attestation.CBO
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]byte, []byte) error); ok {
-		r1 = rf(nonce, userData)
+	if rf, ok := ret.Get(1).(func([]byte, []byte, []byte) error); ok {
+		r1 = rf(nonce, publicKey, userData)
 	} else {
 		r1 = ret.Error(1)
 	}

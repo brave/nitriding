@@ -1,14 +1,10 @@
 package attestation_test
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
 	"errors"
 	"testing"
 
 	"github.com/brave/nitriding/attestation"
-	"github.com/brave/nitriding/attestation/signature"
 	"github.com/brave/nitriding/certificate"
 	"github.com/brave/nitriding/mocks"
 	"github.com/brave/nitriding/nitridingtest"
@@ -23,8 +19,10 @@ func TestStandaloneChecker_Interfaces(t *testing.T) {
 
 func TestMakeStandaloneChecker(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
-		assert.NoError(t, err)
+		cert, err := certificate.MakeBaseCertFromDerBytes(
+			attestation.StandaloneAttesterCert,
+		)
+		require.NoError(t, err)
 		require.NotNil(t, cert)
 
 		checker, err := attestation.MakeStandaloneChecker(cert)
@@ -33,7 +31,7 @@ func TestMakeStandaloneChecker(t *testing.T) {
 	})
 
 	t.Run("cannot get PEM bytes", func(t *testing.T) {
-		cert := new(mocks.PrivilegedCert)
+		cert := new(mocks.Cert)
 		expErr := errors.New("expected error")
 
 		cert.On("PemBytes").Return(certificate.PemBytes{}, expErr)
@@ -46,7 +44,7 @@ func TestMakeStandaloneChecker(t *testing.T) {
 	})
 
 	t.Run("cannot append root cert", func(t *testing.T) {
-		cert := new(mocks.PrivilegedCert)
+		cert := new(mocks.Cert)
 
 		cert.On("PemBytes").Return(certificate.PemBytes{}, nil)
 
@@ -59,46 +57,35 @@ func TestMakeStandaloneChecker(t *testing.T) {
 }
 
 func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
+	nonce := nitridingtest.MakeRandBytes(t, 20)
+	userData := nitridingtest.MakeRandBytes(t, 512)
+	publicKey := nitridingtest.MakeRandBytes(t, 1024)
+
+	cert, err := certificate.BasePrivilegedCertBuilder{}.Build()
+	require.NoError(t, err)
+	require.NotNil(t, cert)
+
+	attester, err := attestation.MakeStandaloneAttester(cert)
+	assert.NoError(t, err)
+	require.NotNil(t, attester)
+
+	attestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+	assert.NoError(t, err)
+	require.NotNil(t, attestDoc)
+
 	t.Run("happy path", func(t *testing.T) {
-		signerPrivateKey, err := rsa.GenerateKey(rand.Reader, 1024)
-		assert.NoError(t, err)
-		require.NotNil(t, signerPrivateKey)
-		signer := signature.MakePSSSigner(*signerPrivateKey)
-		verifier := signature.MakePSSVerifier(signerPrivateKey.PublicKey)
-
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
-		assert.NoError(t, err)
-		require.NotNil(t, cert)
-
-		attester, err := attestation.MakeStandaloneAttester(signer, cert)
-		assert.NoError(t, err)
-		require.NotNil(t, attester)
-
-		nonce := nitridingtest.MakeRandBytes(t, 20)
-		userData := nitridingtest.MakeRandBytes(t, 20)
-
-		attestDoc, err := attester.GetAttestDoc(nonce, userData)
-		assert.NoError(t, err)
-		require.NotNil(t, attestDoc)
-
 		checker, err := attestation.MakeStandaloneChecker(cert)
 		assert.NoError(t, err)
-		doc, err := checker.CheckAttestDoc(attestDoc)
+
+		attest, err := checker.CheckAttestDoc(attestDoc)
 		assert.NoError(t, err)
-		assert.Equal(t, nonce, doc.Document.Nonce)
-		attestPublicKey, err := x509.ParsePKCS1PublicKey(doc.Document.PublicKey)
-		assert.NoError(t, err)
-		assert.True(t, signerPrivateKey.PublicKey.Equal(attestPublicKey))
-		verifiedData, err := verifier.Verify(doc.Document.UserData)
-		assert.NoError(t, err)
-		assert.Equal(t, userData, verifiedData)
+
+		assert.Equal(t, nonce, attest.Document.Nonce)
+		assert.Equal(t, publicKey, attest.Document.PublicKey)
+		assert.Equal(t, userData, attest.Document.UserData)
 	})
 
 	t.Run("nil attestation document", func(t *testing.T) {
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
-		assert.NoError(t, err)
-		require.NotNil(t, cert)
-
 		checker, err := attestation.MakeStandaloneChecker(cert)
 		assert.NoError(t, err)
 		require.NotEqual(t, attestation.StandaloneChecker{}, checker)
@@ -109,10 +96,6 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 	})
 
 	t.Run("empty attestation document", func(t *testing.T) {
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
-		assert.NoError(t, err)
-		require.NotNil(t, cert)
-
 		checker, err := attestation.MakeStandaloneChecker(cert)
 		assert.NoError(t, err)
 		require.NotEqual(t, attestation.StandaloneChecker{}, checker)
@@ -123,20 +106,6 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 	})
 
 	t.Run("empty roots", func(t *testing.T) {
-		attester, err := attestation.StandaloneAttesterBuilder{
-			PrivilegedCertBuilder: certificate.BasePrivilegedCertBuilder{},
-			SignerBuilder:         signature.PPSSignerBuilder{KeyLen: 1024},
-		}.MakeAttester()
-		assert.NoError(t, err)
-		require.NotNil(t, attester)
-
-		nonce := nitridingtest.MakeRandBytes(t, 20)
-		userData := nitridingtest.MakeRandBytes(t, 20)
-
-		attestDoc, err := attester.GetAttestDoc(nonce, userData)
-		assert.NoError(t, err)
-		require.NotNil(t, attestDoc)
-
 		checker := attestation.StandaloneChecker{}
 		res, err := checker.CheckAttestDoc(attestDoc)
 		require.NoError(t, err)

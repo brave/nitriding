@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brave/nitriding"
 	"github.com/brave/nitriding/certificate"
-	"github.com/brave/nitriding/common"
 	"github.com/brave/nitriding/mocks"
 	"github.com/brave/nitriding/nitridingtest"
 	"github.com/brave/nitriding/server"
@@ -203,7 +203,7 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 
 func TestSelfSignedTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.SelfSignedTLSBundleBuilder{}
-	nitridingtest.AttestType[common.Builder[server.TLSBundle]](t, builder)
+	nitridingtest.AttestType[nitriding.Builder[server.TLSBundle]](t, builder)
 }
 
 func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
@@ -252,7 +252,7 @@ func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 
 func TestCertMgrTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.CertMgrTLSBundleBuilder{}
-	nitridingtest.AttestType[common.Builder[server.TLSBundle]](t, &builder)
+	nitridingtest.AttestType[nitriding.Builder[server.TLSBundle]](t, &builder)
 }
 
 func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {

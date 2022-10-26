@@ -28,10 +28,6 @@ type PrivilegedCert interface {
 	TLSCertificate() (tls.Certificate, error)
 }
 
-type PrivilegedCertBuilder interface {
-	MakePrivilegedCert() (PrivilegedCert, error)
-}
-
 type BasePrivilegedCert struct {
 	BaseCert
 	privateKey *ecdsa.PrivateKey
@@ -42,7 +38,7 @@ type BasePrivilegedCertBuilder struct {
 	FQDN    string
 }
 
-func (builder BasePrivilegedCertBuilder) MakePrivilegedCert() (PrivilegedCert, error) {
+func (builder BasePrivilegedCertBuilder) Build() (PrivilegedCert, error) {
 	return MakeBasePrivilegedCert(builder.CertOrg, builder.FQDN, true)
 }
 

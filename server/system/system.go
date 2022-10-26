@@ -9,15 +9,19 @@ import (
 const (
 	ErrMaxFdLimitLowerThanSoft = "hard file descriptor limit cannot be lower" +
 		" than the soft limit"
-	ErrGetFdLimit = "cannot get the current file descriptor limit"
-	ErrSetFdLimit = "cannot set file descriptor limit"
+	ErrGetFdLimit  = "cannot get the current file descriptor limit"
+	ErrSetFdLimit  = "cannot set file descriptor limit"
+	ErrLinkCreate  = "could not create link to the loopback interface"
+	ErrSubnetParse = "could not parse link source subnet"
+	ErrLinkIP      = "could not link source subnet to the loopback interface"
+	ErrLinkUp      = "could not stand up link"
 )
 
 const LocalHostAddr = "127.0.0.1"
 
 const (
-	DefaultFdSoft = uint64(65535)
-	DefaultFdHard = uint64(65535)
+	DefaultFdSoft = uint64(32768)
+	DefaultFdHard = uint64(32768)
 )
 
 func SetFdLimit(soft, hard uint64) error {

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brave/nitriding"
 	"github.com/brave/nitriding/certificate"
-	"github.com/brave/nitriding/common"
 )
 
 const (
@@ -120,7 +120,7 @@ func (tlsBundle *CertMgrTLSBundle) GetConfig() (*tls.Config, error) {
 }
 
 type SelfSignedTLSBundleBuilder struct {
-	PrivilegedCertBuilder common.Builder[certificate.PrivilegedCert]
+	PrivilegedCertBuilder nitriding.Builder[certificate.PrivilegedCert]
 }
 
 func (builder SelfSignedTLSBundleBuilder) Build() (TLSBundle, error) {
@@ -133,7 +133,7 @@ func (builder SelfSignedTLSBundleBuilder) Build() (TLSBundle, error) {
 }
 
 type CertMgrTLSBundleBuilder struct {
-	CertMgrBuilder common.Builder[certificate.CertMgr]
+	CertMgrBuilder nitriding.Builder[certificate.CertMgr]
 	FQDN           string
 }
 

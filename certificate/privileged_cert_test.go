@@ -9,11 +9,20 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/brave/nitriding"
 	"github.com/brave/nitriding/certificate"
 	"github.com/brave/nitriding/nitridingtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestBasePrivilegedCertBuilder(t *testing.T) {
+	builder := certificate.BasePrivilegedCertBuilder{}
+	nitridingtest.AttestType[nitriding.Builder[certificate.PrivilegedCert]](
+		t,
+		builder,
+	)
+}
 
 func TestBasePrivilegedCert_Interfaces(t *testing.T) {
 	cert := certificate.BasePrivilegedCert{}
@@ -22,7 +31,7 @@ func TestBasePrivilegedCert_Interfaces(t *testing.T) {
 
 func TestMakeBasePrivilegedCert(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
+		cert, err := certificate.BasePrivilegedCertBuilder{}.Build()
 		assert.NoError(t, err)
 		assert.NotNil(t, cert)
 
@@ -57,7 +66,7 @@ func TestMakeBasePrivilegedCert(t *testing.T) {
 			cert, err := certificate.BasePrivilegedCertBuilder{
 				CertOrg: tc.certOrg,
 				FQDN:    tc.fqdn,
-			}.MakePrivilegedCert()
+			}.Build()
 			assert.Error(t, err)
 			assert.Regexp(t, regexp.MustCompile(tc.errRegex), err.Error())
 			assert.Equal(t, certificate.BasePrivilegedCert{}, cert)
@@ -81,7 +90,7 @@ func FuzzMakeBasePrivilegedCert(f *testing.F) {
 		cert, makeErr := certificate.BasePrivilegedCertBuilder{
 			CertOrg: certOrg,
 			FQDN:    fqdn,
-		}.MakePrivilegedCert()
+		}.Build()
 		if makeErr == nil {
 			VerifyCert(t, cert)
 		} else {
@@ -118,7 +127,7 @@ func TestBasePrivilegedCert_PrivateKey(t *testing.T) {
 
 func TestBasePrivilegedCert_TLSCertificate(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		cert, err := certificate.BasePrivilegedCertBuilder{}.MakePrivilegedCert()
+		cert, err := certificate.BasePrivilegedCertBuilder{}.Build()
 		assert.NoError(t, err)
 		VerifyCert(t, cert)
 
