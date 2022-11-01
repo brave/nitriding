@@ -32,22 +32,17 @@ type CertMgr interface {
 }
 
 type ACMECertMgrBuilder struct {
-	CertCacheDir string
-	InEnclave    bool
-	Staging      bool
-	Port         uint16
-	FQDN         string
+	InEnclave bool
+	Staging   bool
+	Port      uint16
+	FQDN      string
 }
 
 func (builder ACMECertMgrBuilder) Build() (CertMgr, error) {
-	if builder.CertCacheDir == "" {
-		builder.CertCacheDir = "cert-cache"
-	}
 	if builder.Port == 0 {
 		builder.Port = 1024
 	}
 	certMgr, err := MakeACMECertMgr(
-		builder.CertCacheDir,
 		builder.InEnclave,
 		builder.Staging,
 		builder.Port,
@@ -74,7 +69,6 @@ type ACMECertMgr struct {
 }
 
 func MakeACMECertMgr(
-	certCacheDir string,
 	inEnclave bool,
 	staging bool,
 	port uint16,
@@ -100,7 +94,7 @@ func MakeACMECertMgr(
 	}
 	autocertMgr := &autocert.Manager{
 		Client:     &acme.Client{DirectoryURL: dirURL},
-		Cache:      autocert.DirCache(certCacheDir),
+		Cache:      NewCache(),
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(fqdns...),
 	}
