@@ -108,9 +108,7 @@ func TestStandaloneAttester_GetAttestDoc_NoMock(t *testing.T) {
 			assert.NoError(t, err)
 			require.NotNil(t, attestDoc)
 
-			checker, err := attestation.MakeStandaloneChecker(cert)
-			assert.NoError(t, err)
-
+			checker := attestation.StandaloneChecker{}
 			attest, err := checker.CheckAttestDoc(attestDoc)
 			assert.NoError(t, err)
 

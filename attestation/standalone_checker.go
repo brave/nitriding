@@ -5,43 +5,26 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/brave/nitriding/certificate"
 	"github.com/hf/nitrite"
 )
 
 const (
-	ErrPEMAppend = "could not append root certificate from PEM bytes"
 	ErrDocVerify = "could not verify attestation doc"
 )
 
 type StandaloneChecker struct {
-	roots *x509.CertPool
 }
 
-func MakeStandaloneChecker(cert certificate.Cert) (StandaloneChecker, error) {
-	pemBytes, err := cert.PemBytes()
-	if err != nil {
-		return StandaloneChecker{}, err
-	}
-
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM(pemBytes)
-	if !ok {
-		return StandaloneChecker{}, fmt.Errorf(ErrPEMAppend)
-	}
-
-	return StandaloneChecker{roots: roots}, nil
-}
-
-func (checker StandaloneChecker) CheckAttestDoc(
+func (_ StandaloneChecker) CheckAttestDoc(
 	attestDoc CBOR,
 ) (
 	*nitrite.Result,
 	error,
 ) {
+	var roots x509.CertPool
 	res, err := nitrite.Verify(
 		attestDoc, nitrite.VerifyOptions{
-			Roots:               checker.roots,
+			Roots:               &roots,
 			CurrentTime:         time.Now(),
 			AllowSelfSignedCert: true,
 		},

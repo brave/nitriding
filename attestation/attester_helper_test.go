@@ -31,6 +31,51 @@ func TestBaseAttesterHelper_MakePCRs(t *testing.T) {
 	assert.NotNil(t, pcrs)
 }
 
+func TestBaseAttesterHelper_MakeCOSEMessage(t *testing.T) {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	require.NoError(t, err)
+	require.NotNil(t, privateKey)
+	payload := bytes.Repeat([]byte{0x30}, 48)
+	helper := attestation.BaseAttesterHelper{}
+
+	t.Run("happy path", func(t *testing.T) {
+		coseMsg, err := helper.MakeCOSEMessage(payload, privateKey)
+		assert.NoError(t, err)
+		require.NotNil(t, coseMsg)
+		assert.Equal(t, payload, coseMsg.Payload)
+
+		coseVerifier, err := cose.NewVerifier(
+			attestation.COSEAlgorithm,
+			&privateKey.PublicKey,
+		)
+		assert.NoError(t, err)
+		require.NotNil(t, coseVerifier)
+
+		err = coseMsg.Verify(nil, coseVerifier)
+		assert.NoError(t, err)
+	})
+
+	t.Run("cannot verify with different key", func(t *testing.T) {
+		coseMsg, err := helper.MakeCOSEMessage(payload, privateKey)
+		assert.NoError(t, err)
+		require.NotNil(t, coseMsg)
+
+		diffPrivateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+		require.NoError(t, err)
+		require.NotNil(t, diffPrivateKey)
+
+		coseVerifier, err := cose.NewVerifier(
+			attestation.COSEAlgorithm,
+			&diffPrivateKey.PublicKey,
+		)
+		assert.NoError(t, err)
+		require.NotNil(t, coseVerifier)
+
+		err = coseMsg.Verify(nil, coseVerifier)
+		assert.ErrorContains(t, err, cose.ErrVerification.Error())
+	})
+}
+
 func FuzzBaseAttesterHelper_MakeCOSEMessage(f *testing.F) {
 	tests := []struct {
 		payload []byte
@@ -48,7 +93,7 @@ func FuzzBaseAttesterHelper_MakeCOSEMessage(f *testing.F) {
 		attestation.COSEAlgorithm,
 		&privateKey.PublicKey,
 	)
-	assert.NoError(f, err)
+	require.NoError(f, err)
 	require.NotNil(f, coseVerifier)
 	helper := attestation.BaseAttesterHelper{}
 

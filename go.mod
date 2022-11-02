@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/brave/viproxy v0.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/libcontainer v2.2.1+incompatible // indirect
 	github.com/google/uuid v1.2.0 // indirect

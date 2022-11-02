@@ -4,6 +4,8 @@ github.com/blocky/nsm v0.0.0-20220902220237-de4e289e7f0c h1:RJraer12Tl6jw61F1N/T
 github.com/blocky/nsm v0.0.0-20220902220237-de4e289e7f0c/go.mod h1:ASpElHP0RC9WEQ8zqjspIEk/uqNAmsqCacsXNFH64v0=
 github.com/blocky/parlor v1.0.0 h1:nzMlMPLrkX2RwBePl/IuCXLEd/kYMVFeywgapfpi7Ng=
 github.com/blocky/parlor v1.0.0/go.mod h1:4GdHF/DE2zcYDvHtqKGRHQFdqrIas+fFi2c2qdJDY9M=
+github.com/brave/viproxy v0.1.2 h1:sOY8bI1CqLNq+KyRJrEzQuWia81UmLjK5kqTqD284hs=
+github.com/brave/viproxy v0.1.2/go.mod h1:E5v9Ajo1sPVAmgDjKDU8fLmkoJeHjtcXJIkEm8XubpQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
