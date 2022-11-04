@@ -18,7 +18,7 @@ import (
 
 func TestBasePrivilegedCertBuilder(t *testing.T) {
 	builder := certificate.BasePrivilegedCertBuilder{}
-	nitridingtest.AttestType[nitriding.Builder[certificate.PrivilegedCert]](
+	nitridingtest.AssertType[nitriding.Builder[certificate.PrivilegedCert]](
 		t,
 		builder,
 	)
@@ -26,7 +26,7 @@ func TestBasePrivilegedCertBuilder(t *testing.T) {
 
 func TestBasePrivilegedCert_Interfaces(t *testing.T) {
 	cert := certificate.BasePrivilegedCert{}
-	nitridingtest.AttestType[certificate.PrivilegedCert](t, cert)
+	nitridingtest.AssertType[certificate.PrivilegedCert](t, cert)
 }
 
 func TestMakeBasePrivilegedCert(t *testing.T) {

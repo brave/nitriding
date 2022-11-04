@@ -37,7 +37,7 @@ func MakeRandBytes(t *testing.T, len uint) []byte {
 	return bytes
 }
 
-func AttestType[T any](t *testing.T, obj any) {
+func AssertType[T any](t *testing.T, obj any) {
 	_, ok := obj.(T)
 
 	assert.Truef(

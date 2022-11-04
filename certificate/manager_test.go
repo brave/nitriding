@@ -20,7 +20,7 @@ import (
 
 func TestACMECertMgrBuilder_Interfaces(t *testing.T) {
 	builder := certificate.ACMECertMgrBuilder{}
-	nitridingtest.AttestType[nitriding.Builder[certificate.CertMgr]](t, builder)
+	nitridingtest.AssertType[nitriding.Builder[certificate.CertMgr]](t, builder)
 }
 
 func buildCertMgr(
@@ -62,7 +62,7 @@ func TestACMECertMgrBuilder_Build(t *testing.T) {
 
 func TestACMECertMgr_Interfaces(t *testing.T) {
 	certMgr := certificate.ACMECertMgr{}
-	nitridingtest.AttestType[certificate.CertMgr](t, certMgr)
+	nitridingtest.AssertType[certificate.CertMgr](t, certMgr)
 }
 
 func errChanTimeout(

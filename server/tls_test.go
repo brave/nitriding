@@ -19,7 +19,7 @@ import (
 
 func TestPrivilegedCertTLSBundle_Interfaces(t *testing.T) {
 	tlsBundle := server.PrivilegedCertTLSBundle{}
-	nitridingtest.AttestType[server.TLSBundle](t, tlsBundle)
+	nitridingtest.AssertType[server.TLSBundle](t, tlsBundle)
 }
 
 func TestPrivilegedCertTLSBundle_GetCert(t *testing.T) {
@@ -72,7 +72,7 @@ func TestPrivilegedCertTLSBundle_GetConfig(t *testing.T) {
 
 func TestCertMgrTLSBundle_Interfaces(t *testing.T) {
 	tlsBundle := server.CertMgrTLSBundle{}
-	nitridingtest.AttestType[server.TLSBundle](t, &tlsBundle)
+	nitridingtest.AssertType[server.TLSBundle](t, &tlsBundle)
 }
 
 func TestCertMgrTLSBundle_GetCert(t *testing.T) {
@@ -203,7 +203,7 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 
 func TestSelfSignedTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.SelfSignedTLSBundleBuilder{}
-	nitridingtest.AttestType[nitriding.Builder[server.TLSBundle]](t, builder)
+	nitridingtest.AssertType[nitriding.Builder[server.TLSBundle]](t, builder)
 }
 
 func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
@@ -252,7 +252,7 @@ func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 
 func TestCertMgrTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.CertMgrTLSBundleBuilder{}
-	nitridingtest.AttestType[nitriding.Builder[server.TLSBundle]](t, &builder)
+	nitridingtest.AssertType[nitriding.Builder[server.TLSBundle]](t, &builder)
 }
 
 func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {

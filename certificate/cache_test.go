@@ -13,7 +13,7 @@ import (
 
 func TestCertCache_Interfaces(t *testing.T) {
 	cc := certificate.Cache{}
-	nitridingtest.AttestType[autocert.Cache](t, &cc)
+	nitridingtest.AssertType[autocert.Cache](t, &cc)
 }
 
 func TestCache_Put(t *testing.T) {
