@@ -9,9 +9,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/brave/nitriding"
-	"github.com/brave/nitriding/attestation"
-	"github.com/brave/nitriding/certificate"
+	"github.com/blocky/nitriding/pkg/nitriding"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -40,7 +38,8 @@ func Example() {
 	}
 
 	// Check that the attestation is correctly signed
-	attest, err := attestation.StandaloneChecker{}.CheckAttestDoc(body)
+	checker := nitriding.MakeStandaloneChecker()
+	attest, err := checker.CheckAttestDoc(body)
 	if err != nil {
 		log.Println(err)
 		return
@@ -60,14 +59,13 @@ func Example() {
 		log.Println(err)
 		return
 	}
-	connTLSCert, err := certificate.MakeBaseCertFromDerBytes(
+	connTLSCertDigest, err := nitriding.CertDigest(
 		resp.TLS.PeerCertificates[0].Raw,
 	)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	connTLSCertDigest := connTLSCert.Digest()
 	if bytes.Compare(connTLSCertDigest[:], attTLSCertFpr.Value) == 0 {
 		fmt.Println("Client and server TLS certificate fingerprints match")
 	}

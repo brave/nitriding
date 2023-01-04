@@ -3,10 +3,9 @@
 package mocks
 
 import (
-	attestation "github.com/brave/nitriding/attestation"
-	cose "github.com/veraison/go-cose"
-
 	ecdsa "crypto/ecdsa"
+
+	cose "github.com/veraison/go-cose"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -63,15 +62,15 @@ func (_m *AttesterHelper) MakePCRs() (map[uint][]byte, error) {
 }
 
 // MarshalCBOR provides a mock function with given fields: obj
-func (_m *AttesterHelper) MarshalCBOR(obj interface{}) (attestation.CBOR, error) {
+func (_m *AttesterHelper) MarshalCBOR(obj interface{}) ([]byte, error) {
 	ret := _m.Called(obj)
 
-	var r0 attestation.CBOR
-	if rf, ok := ret.Get(0).(func(interface{}) attestation.CBOR); ok {
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(interface{}) []byte); ok {
 		r0 = rf(obj)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(attestation.CBOR)
+			r0 = ret.Get(0).([]byte)
 		}
 	}
 

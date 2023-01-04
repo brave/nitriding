@@ -1,6 +1,6 @@
 # Nitriding
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/brave/nitriding?utm_source=godoc)](https://pkg.go.dev/github.com/brave/nitriding)
+[![GoDoc](https://pkg.go.dev/badge/github.com/blocky/nitriding?utm_source=godoc)](https://pkg.go.dev/github.com/blocky/nitriding)
 
 This package helps with building Go-based Web applications on top of AWS Nitro
 Enclaves. The package provides the following features:
@@ -46,7 +46,7 @@ and a
 [socksproxy](https://github.com/brave-intl/bat-go/tree/nitro-utils/nitro-shim/tools/socksproxy)
 to connect the components of the system as in the following diagram.
 
-![nitriding architecture](architecture.png)
+![nitriding architecture](assets/architecture.png)
 
 The `Server` process running insider the Enclave handles user requests on
 port `8443`.

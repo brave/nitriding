@@ -3,10 +3,9 @@
 package mocks
 
 import (
-	attestation "github.com/brave/nitriding/attestation"
-	certificate "github.com/brave/nitriding/certificate"
-
 	http "net/http"
+
+	certificate "github.com/blocky/nitriding/internal/certificate"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -45,15 +44,15 @@ func (_m *Server) CodeURL() string {
 }
 
 // GetAttestDoc provides a mock function with given fields: nonce, publicKey, userData
-func (_m *Server) GetAttestDoc(nonce []byte, publicKey []byte, userData []byte) (attestation.CBOR, error) {
+func (_m *Server) GetAttestDoc(nonce []byte, publicKey []byte, userData []byte) ([]byte, error) {
 	ret := _m.Called(nonce, publicKey, userData)
 
-	var r0 attestation.CBOR
-	if rf, ok := ret.Get(0).(func([]byte, []byte, []byte) attestation.CBOR); ok {
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func([]byte, []byte, []byte) []byte); ok {
 		r0 = rf(nonce, publicKey, userData)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(attestation.CBOR)
+			r0 = ret.Get(0).([]byte)
 		}
 	}
 

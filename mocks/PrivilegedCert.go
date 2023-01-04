@@ -5,7 +5,7 @@ package mocks
 import (
 	ecdsa "crypto/ecdsa"
 
-	certificate "github.com/brave/nitriding/certificate"
+	certificate "github.com/blocky/nitriding/internal/certificate"
 
 	mock "github.com/stretchr/testify/mock"
 
