@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/blocky/nitrite v0.0.2-0.20221216182216-a115f6244fe8
-	github.com/blocky/parlor v1.0.0
+	github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737
 	github.com/brave/viproxy v0.1.2
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/go-chi/chi/v5 v5.0.8
