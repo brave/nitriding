@@ -42,7 +42,7 @@ func VerifyCert(t *testing.T, cert certificate.Cert) {
 }
 
 func TestBaseCert_Interfaces(t *testing.T) {
-	nitridingtest.AssertType[certificate.Cert](t, certificate.BaseCert{})
+	parlor.AssertType[certificate.Cert](t, certificate.BaseCert{})
 }
 
 func TestMakeBaseCertFromDerBytesRaw(t *testing.T) {

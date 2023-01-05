@@ -17,7 +17,7 @@ import (
 
 func TestNitroAttester_Interfaces(t *testing.T) {
 	attester := attestation.NitroAttester{}
-	nitridingtest.AssertType[attestation.Attester](t, attester)
+	parlor.AssertType[attestation.Attester](t, attester)
 }
 
 func TestNitroAttesterBuilder_Build(t *testing.T) {

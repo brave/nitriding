@@ -21,7 +21,7 @@ import (
 
 func TestBaseServerBuilder_Interfaces(t *testing.T) {
 	serverBuilder := server.BaseServerBuilder{}
-	nitridingtest.AssertType[internal.Builder[server.Server]](t, serverBuilder)
+	parlor.AssertType[internal.Builder[server.Server]](t, serverBuilder)
 }
 
 type BaseServerBuilderParlor struct {
@@ -170,7 +170,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 func TestBaseServer_Interfaces(t *testing.T) {
 	srv := server.BaseServer{}
-	nitridingtest.AssertType[server.Server](t, &srv)
+	parlor.AssertType[server.Server](t, &srv)
 }
 
 func TestBaseServer_GetAttestDoc(t *testing.T) {

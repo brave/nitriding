@@ -3,11 +3,9 @@ package nitridingtest
 import (
 	"crypto/rand"
 	"errors"
-	"reflect"
 	"regexp"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,16 +33,4 @@ func MakeRandBytes(t *testing.T, len uint) []byte {
 	_, err := rand.Read(bytes)
 	require.NoError(t, err)
 	return bytes
-}
-
-func AssertType[T any](t *testing.T, obj any) {
-	_, ok := obj.(T)
-
-	assert.Truef(
-		t,
-		ok,
-		"obj of type %#v is not %v",
-		obj,
-		reflect.TypeOf((*T)(nil)).String()[1:],
-	)
 }

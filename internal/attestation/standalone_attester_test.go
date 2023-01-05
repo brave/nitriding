@@ -18,12 +18,12 @@ import (
 
 func TestStandaloneAttesterBuilder_Interfaces(t *testing.T) {
 	builder := attestation.StandaloneAttesterBuilder{}
-	nitridingtest.AssertType[internal.Builder[attestation.Attester]](t, builder)
+	parlor.AssertType[internal.Builder[attestation.Attester]](t, builder)
 }
 
 func TestStandaloneAttester_Interfaces(t *testing.T) {
 	attester := attestation.StandaloneAttester{}
-	nitridingtest.AssertType[attestation.Attester](t, attester)
+	parlor.AssertType[attestation.Attester](t, attester)
 }
 
 func TestStandaloneAttesterBuilder_Build(t *testing.T) {

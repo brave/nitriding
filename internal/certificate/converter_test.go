@@ -32,7 +32,7 @@ func makeCACert(t *testing.T) certificate.PrivilegedCert {
 
 func TestBaseConverter_Interfaces(t *testing.T) {
 	converter := certificate.BaseConverter{}
-	nitridingtest.AssertType[certificate.Converter](t, converter)
+	parlor.AssertType[certificate.Converter](t, converter)
 }
 
 func TestBaseConverter_PemToDer(t *testing.T) {

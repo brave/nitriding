@@ -12,7 +12,7 @@ import (
 
 func TestStandaloneChecker_Interfaces(t *testing.T) {
 	checker := attestation.StandaloneChecker{}
-	nitridingtest.AssertType[attestation.Checker](t, checker)
+	parlor.AssertType[attestation.Checker](t, checker)
 }
 
 func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
