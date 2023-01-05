@@ -37,7 +37,7 @@ func TestBaseServerBuilderParlor(t *testing.T) {
 	parlor.Run(t, new(BaseServerBuilderParlor))
 }
 
-func (p *BaseServerBuilderParlor) SetupTest() {
+func (p *BaseServerBuilderParlor) SetupSubtest() {
 	p.attesterBuilder = new(mocks.Builder[attestation.Attester])
 	p.tlsBundleBuilder = new(mocks.Builder[server.TLSBundle])
 	p.proxyBuilder = new(mocks.ProxyConfigurator)
@@ -46,7 +46,7 @@ func (p *BaseServerBuilderParlor) SetupTest() {
 
 }
 
-func (p *BaseServerBuilderParlor) TearDownTest() {
+func (p *BaseServerBuilderParlor) TearDownSubtest() {
 	p.attesterBuilder.AssertExpectations(p.T())
 	p.tlsBundleBuilder.AssertExpectations(p.T())
 	p.proxyBuilder.AssertExpectations(p.T())
@@ -76,7 +76,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.NoError(err)
 		p.NotNil(srv)
-	}, p)
+	})
 
 	p.Run("cannot build attester", func() {
 		p.attesterBuilder.On("Build").
@@ -91,7 +91,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot build TLS bundle", func() {
 		p.attesterBuilder.On("Build").
@@ -108,7 +108,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot configure socks proxy", func() {
 		p.attesterBuilder.On("Build").
@@ -126,7 +126,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot configure viproxy", func() {
 		p.attesterBuilder.On("Build").
@@ -145,7 +145,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot get TLS config", func() {
 		p.attesterBuilder.On("Build").
@@ -165,7 +165,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 }
 
 func TestBaseServer_Interfaces(t *testing.T) {
