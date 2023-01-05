@@ -129,12 +129,12 @@ func TestStandaloneAttesterParlor(t *testing.T) {
 	parlor.Run(t, new(StandaloneAttesterParlor))
 }
 
-func (p *StandaloneAttesterParlor) SetupTest() {
+func (p *StandaloneAttesterParlor) SetupSubtest() {
 	p.cert = new(mocks.PrivilegedCert)
 	p.helper = new(mocks.AttesterHelper)
 }
 
-func (p *StandaloneAttesterParlor) TearDownTest() {
+func (p *StandaloneAttesterParlor) TearDownSubtest() {
 	p.cert.AssertExpectations(p.T())
 	p.helper.AssertExpectations(p.T())
 }
@@ -193,7 +193,7 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.NoError(err)
 		p.Equal(cosePayloadBytes, attestDoc)
-	}, p)
+	})
 
 	p.Run("error marshalling COSE header", func() {
 		attester := p.makeAttester()
@@ -206,7 +206,7 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(attestDoc)
-	}, p)
+	})
 
 	p.Run("error making PCRs", func() {
 		attester := attestation.MakeStandaloneAttesterFromRaw(p.cert, p.helper)
@@ -217,7 +217,7 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(attestDoc)
-	}, p)
+	})
 
 	p.Run("error marshalling doc", func() {
 		attester := p.makeAttester()
@@ -231,7 +231,7 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(attestDoc)
-	}, p)
+	})
 
 	p.Run("error making COSE message", func() {
 		attester := p.makeAttester()
@@ -248,7 +248,7 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(attestDoc)
-	}, p)
+	})
 
 	p.Run("error marshalling COSE payload", func() {
 		attester := p.makeAttester()
@@ -270,5 +270,5 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(attestDoc)
-	}, p)
+	})
 }
