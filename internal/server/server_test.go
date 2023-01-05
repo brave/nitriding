@@ -10,7 +10,6 @@ import (
 	"github.com/blocky/nitriding/internal"
 	"github.com/blocky/nitriding/internal/attestation"
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/internal/server"
 	"github.com/blocky/nitriding/mocks"
 	"github.com/blocky/nitriding/pkg/nitriding"

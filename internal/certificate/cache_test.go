@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 )
 

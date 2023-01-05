@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/blocky/nitriding/internal/attestation"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/mocks"
 	"github.com/blocky/parlor"
 	"github.com/hf/nsm"

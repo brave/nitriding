@@ -11,8 +11,8 @@ import (
 
 	"github.com/blocky/nitriding/internal"
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/mocks"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

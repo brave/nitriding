@@ -7,6 +7,7 @@ import (
 	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/internal/server"
 	"github.com/blocky/nitriding/internal/server/system"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
