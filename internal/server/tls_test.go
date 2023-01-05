@@ -9,9 +9,9 @@ import (
 
 	"github.com/blocky/nitriding/internal"
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/internal/server"
 	"github.com/blocky/nitriding/mocks"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -19,7 +19,7 @@ import (
 
 func TestPrivilegedCertTLSBundle_Interfaces(t *testing.T) {
 	tlsBundle := server.PrivilegedCertTLSBundle{}
-	nitridingtest.AssertType[server.TLSBundle](t, tlsBundle)
+	parlor.AssertType[server.TLSBundle](t, tlsBundle)
 }
 
 func TestPrivilegedCertTLSBundle_GetCert(t *testing.T) {
@@ -72,7 +72,7 @@ func TestPrivilegedCertTLSBundle_GetConfig(t *testing.T) {
 
 func TestCertMgrTLSBundle_Interfaces(t *testing.T) {
 	tlsBundle := server.CertMgrTLSBundle{}
-	nitridingtest.AssertType[server.TLSBundle](t, &tlsBundle)
+	parlor.AssertType[server.TLSBundle](t, &tlsBundle)
 }
 
 func TestCertMgrTLSBundle_GetCert(t *testing.T) {
@@ -203,7 +203,7 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 
 func TestSelfSignedTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.SelfSignedTLSBundleBuilder{}
-	nitridingtest.AssertType[internal.Builder[server.TLSBundle]](t, builder)
+	parlor.AssertType[internal.Builder[server.TLSBundle]](t, builder)
 }
 
 func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
@@ -252,7 +252,7 @@ func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 
 func TestCertMgrTLSBundleBuilder_Interfaces(t *testing.T) {
 	builder := server.CertMgrTLSBundleBuilder{}
-	nitridingtest.AssertType[internal.Builder[server.TLSBundle]](t, &builder)
+	parlor.AssertType[internal.Builder[server.TLSBundle]](t, &builder)
 }
 
 func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {

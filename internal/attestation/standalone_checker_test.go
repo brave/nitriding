@@ -6,13 +6,14 @@ import (
 	"github.com/blocky/nitriding/internal/attestation"
 	"github.com/blocky/nitriding/internal/certificate"
 	"github.com/blocky/nitriding/internal/nitridingtest"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStandaloneChecker_Interfaces(t *testing.T) {
 	checker := attestation.StandaloneChecker{}
-	nitridingtest.AssertType[attestation.Checker](t, checker)
+	parlor.AssertType[attestation.Checker](t, checker)
 }
 
 func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {

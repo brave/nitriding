@@ -121,11 +121,11 @@ func TestGetAttesterHandlerParlor(t *testing.T) {
 	parlor.Run(t, new(GetAttesterHandlerParlor))
 }
 
-func (p *GetAttesterHandlerParlor) SetupTest() {
+func (p *GetAttesterHandlerParlor) SetupSubtest() {
 	p.srv = new(mocks.Server)
 }
 
-func (p *GetAttesterHandlerParlor) TearDownTest() {
+func (p *GetAttesterHandlerParlor) TearDownSubtest() {
 	p.srv.AssertExpectations(p.T())
 }
 
@@ -155,7 +155,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 		payload := responsePayload(p.T(), response)
 		p.Equal([]byte(attestDoc), payload)
-	}, p)
+	})
 
 	p.Run("nonce too long", func() {
 		response := getResponse(
@@ -168,7 +168,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 		payload := string(responsePayload(p.T(), response))
 		p.Contains(payload, nitriding.ErrBadNonce)
-	}, p)
+	})
 
 	p.Run("happy path - no nonce", func() {
 		p.srv.On("TLSCertFingerprint").Return(tlsCertFprBytes, nil)
@@ -185,7 +185,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 		payload := responsePayload(p.T(), response)
 		p.Equal([]byte(attestDoc), payload)
-	}, p)
+	})
 
 	p.Run("fail getting TLS cert", func() {
 		p.srv.On("TLSCertFingerprint").Return(nil, expErr)
@@ -200,7 +200,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 		payload := string(responsePayload(p.T(), response))
 		p.Contains(payload, nitriding.ErrFailedCert)
-	}, p)
+	})
 
 	p.Run("fail getting attest doc", func() {
 		p.srv.On("TLSCertFingerprint").Return(tlsCertFprBytes, nil)
@@ -217,7 +217,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 		payload := string(responsePayload(p.T(), response))
 		p.Contains(payload, nitriding.ErrAttest)
-	}, p)
+	})
 
 	testCheckHandlerInputs(p.T(), nitriding.GetAttesterHandler)
 }

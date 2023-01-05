@@ -7,13 +7,14 @@ import (
 	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/internal/server"
 	"github.com/blocky/nitriding/internal/server/system"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNoOpProxyConfigurator_Interfaces(t *testing.T) {
 	proxyBuilder := server.NoOpProxyConfigurator{}
-	nitridingtest.AssertType[server.ProxyConfigurator](t, proxyBuilder)
+	parlor.AssertType[server.ProxyConfigurator](t, proxyBuilder)
 }
 
 func TestNoOpProxyConfigurator_ConfigureSOCKSProxy(t *testing.T) {
@@ -132,7 +133,7 @@ func FuzzParseSOCKSAddress(f *testing.F) {
 
 func TestNitroProxyConfigurator_Interfaces(t *testing.T) {
 	proxyBuilder := server.NitroProxyConfigurator{}
-	nitridingtest.AssertType[server.ProxyConfigurator](t, proxyBuilder)
+	parlor.AssertType[server.ProxyConfigurator](t, proxyBuilder)
 }
 
 func TestNitroProxyConfigurator_ConfigureSOCKSProxy(t *testing.T) {

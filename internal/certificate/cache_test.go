@@ -7,13 +7,13 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCertCache_Interfaces(t *testing.T) {
 	cc := certificate.Cache{}
-	nitridingtest.AssertType[autocert.Cache](t, &cc)
+	parlor.AssertType[autocert.Cache](t, &cc)
 }
 
 func TestCache_Put(t *testing.T) {

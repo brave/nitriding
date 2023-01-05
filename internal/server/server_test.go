@@ -10,7 +10,6 @@ import (
 	"github.com/blocky/nitriding/internal"
 	"github.com/blocky/nitriding/internal/attestation"
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/internal/server"
 	"github.com/blocky/nitriding/mocks"
 	"github.com/blocky/nitriding/pkg/nitriding"
@@ -21,7 +20,7 @@ import (
 
 func TestBaseServerBuilder_Interfaces(t *testing.T) {
 	serverBuilder := server.BaseServerBuilder{}
-	nitridingtest.AssertType[internal.Builder[server.Server]](t, serverBuilder)
+	parlor.AssertType[internal.Builder[server.Server]](t, serverBuilder)
 }
 
 type BaseServerBuilderParlor struct {
@@ -37,7 +36,7 @@ func TestBaseServerBuilderParlor(t *testing.T) {
 	parlor.Run(t, new(BaseServerBuilderParlor))
 }
 
-func (p *BaseServerBuilderParlor) SetupTest() {
+func (p *BaseServerBuilderParlor) SetupSubtest() {
 	p.attesterBuilder = new(mocks.Builder[attestation.Attester])
 	p.tlsBundleBuilder = new(mocks.Builder[server.TLSBundle])
 	p.proxyBuilder = new(mocks.ProxyConfigurator)
@@ -46,7 +45,7 @@ func (p *BaseServerBuilderParlor) SetupTest() {
 
 }
 
-func (p *BaseServerBuilderParlor) TearDownTest() {
+func (p *BaseServerBuilderParlor) TearDownSubtest() {
 	p.attesterBuilder.AssertExpectations(p.T())
 	p.tlsBundleBuilder.AssertExpectations(p.T())
 	p.proxyBuilder.AssertExpectations(p.T())
@@ -76,7 +75,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.NoError(err)
 		p.NotNil(srv)
-	}, p)
+	})
 
 	p.Run("cannot build attester", func() {
 		p.attesterBuilder.On("Build").
@@ -91,7 +90,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot build TLS bundle", func() {
 		p.attesterBuilder.On("Build").
@@ -108,7 +107,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot configure socks proxy", func() {
 		p.attesterBuilder.On("Build").
@@ -126,7 +125,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot configure viproxy", func() {
 		p.attesterBuilder.On("Build").
@@ -145,7 +144,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 
 	p.Run("cannot get TLS config", func() {
 		p.attesterBuilder.On("Build").
@@ -165,12 +164,12 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 		srv, err := builder.Build()
 		p.ErrorIs(err, expErr)
 		p.Nil(srv)
-	}, p)
+	})
 }
 
 func TestBaseServer_Interfaces(t *testing.T) {
 	srv := server.BaseServer{}
-	nitridingtest.AssertType[server.Server](t, &srv)
+	parlor.AssertType[server.Server](t, &srv)
 }
 
 func TestBaseServer_GetAttestDoc(t *testing.T) {

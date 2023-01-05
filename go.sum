@@ -2,6 +2,8 @@ github.com/blocky/nitrite v0.0.2-0.20221216182216-a115f6244fe8 h1:J2wPqNr9PyvCQe
 github.com/blocky/nitrite v0.0.2-0.20221216182216-a115f6244fe8/go.mod h1:QhpIeDjO6C7k9XQy6osO+Ulj+3ZwJrTfZgzW2yysOhk=
 github.com/blocky/parlor v1.0.0 h1:nzMlMPLrkX2RwBePl/IuCXLEd/kYMVFeywgapfpi7Ng=
 github.com/blocky/parlor v1.0.0/go.mod h1:4GdHF/DE2zcYDvHtqKGRHQFdqrIas+fFi2c2qdJDY9M=
+github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737 h1:qXEyFyZ6ROB0N6CAhINTTbm12UrBiioo7oOPEUzx1yk=
+github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737/go.mod h1:Xf/srxw38gl4j3lxo4hxpoSDociIaVWbuZi1lJhjOAk=
 github.com/brave/viproxy v0.1.2 h1:sOY8bI1CqLNq+KyRJrEzQuWia81UmLjK5kqTqD284hs=
 github.com/brave/viproxy v0.1.2/go.mod h1:E5v9Ajo1sPVAmgDjKDU8fLmkoJeHjtcXJIkEm8XubpQ=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=

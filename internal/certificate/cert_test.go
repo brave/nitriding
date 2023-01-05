@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/blocky/nitriding/internal/certificate"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/mocks"
+	"github.com/blocky/parlor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +42,7 @@ func VerifyCert(t *testing.T, cert certificate.Cert) {
 }
 
 func TestBaseCert_Interfaces(t *testing.T) {
-	nitridingtest.AssertType[certificate.Cert](t, certificate.BaseCert{})
+	parlor.AssertType[certificate.Cert](t, certificate.BaseCert{})
 }
 
 func TestMakeBaseCertFromDerBytesRaw(t *testing.T) {

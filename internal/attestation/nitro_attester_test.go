@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/blocky/nitriding/internal/attestation"
-	"github.com/blocky/nitriding/internal/nitridingtest"
 	"github.com/blocky/nitriding/mocks"
 	"github.com/blocky/parlor"
 	"github.com/hf/nsm"
@@ -17,7 +16,7 @@ import (
 
 func TestNitroAttester_Interfaces(t *testing.T) {
 	attester := attestation.NitroAttester{}
-	nitridingtest.AssertType[attestation.Attester](t, attester)
+	parlor.AssertType[attestation.Attester](t, attester)
 }
 
 func TestNitroAttesterBuilder_Build(t *testing.T) {
@@ -56,11 +55,11 @@ func TestNitroAttesterParlor(t *testing.T) {
 	parlor.Run(t, new(NitroAttesterParlor))
 }
 
-func (p *NitroAttesterParlor) SetupTest() {
+func (p *NitroAttesterParlor) SetupSubtest() {
 	p.nsmSession = new(mocks.NSMSession)
 }
 
-func (p *NitroAttesterParlor) TearDownTest() {
+func (p *NitroAttesterParlor) TearDownSubtest() {
 	p.nsmSession.AssertExpectations(p.T())
 }
 
@@ -89,7 +88,7 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
 		p.NoError(err)
 		p.Equal(attestDoc, outAttestDoc)
-	}, p)
+	})
 
 	p.Run("session.Send error", func() {
 		p.nsmSession.On("Send", mock.Anything).Return(
@@ -103,7 +102,7 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
 		p.ErrorIs(err, expErr)
 		p.Nil(outAttestDoc)
-	}, p)
+	})
 
 	p.Run("session.Send returns nil attestation", func() {
 		p.nsmSession.On("Send", mock.Anything).Return(
@@ -117,7 +116,7 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
 		p.ErrorContains(err, attestation.ErrNSM)
 		p.Nil(outAttestDoc)
-	}, p)
+	})
 
 	p.Run("session.Send returns nil attestDoc", func() {
 		p.nsmSession.On("Send", mock.Anything).Return(
@@ -133,5 +132,5 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
 		p.ErrorContains(err, attestation.ErrNSM)
 		p.Nil(outAttestDoc)
-	}, p)
+	})
 }
