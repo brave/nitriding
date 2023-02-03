@@ -44,7 +44,7 @@ func (_m *Server) CodeURL() string {
 }
 
 // GetAttestDoc provides a mock function with given fields: nonce, publicKey, userData
-func (_m *Server) GetAttestDoc(nonce []byte, publicKey []byte, userData []byte) ([]byte, error) {
+func (_m *Server) Attest(nonce []byte, publicKey []byte, userData []byte) ([]byte, error) {
 	ret := _m.Called(nonce, publicKey, userData)
 
 	var r0 []byte

@@ -129,13 +129,13 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 		sha256.Sum256([]byte("certificate")),
 	)
 	tlsCertFpr := nitriding.TLSCertFpr{Value: tlsCertFprBytes[:]}
-	attestDoc := []byte("attestation document")
+	attestation := []byte("attestation")
 	expErr := errors.New("expected error")
 
 	p.Run("happy path", func() {
 		p.srv.On("TLSCertFingerprint").Return(tlsCertFprBytes, nil)
-		p.srv.On("GetAttestDoc", nonce.Value, []byte{}, tlsCertFpr.Value).
-			Return(attestDoc, nil)
+		p.srv.On("Attest", nonce.Value, []byte{}, tlsCertFpr.Value).
+			Return(attestation, nil)
 
 		response := getResponse(
 			p.srv,
@@ -146,7 +146,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 		p.Equal(http.StatusOK, response.StatusCode)
 
 		payload := responsePayload(p.T(), response)
-		p.Equal([]byte(attestDoc), payload)
+		p.Equal(attestation, payload)
 	})
 
 	p.Run("nonce too long", func() {
@@ -164,8 +164,8 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 
 	p.Run("happy path - no nonce", func() {
 		p.srv.On("TLSCertFingerprint").Return(tlsCertFprBytes, nil)
-		p.srv.On("GetAttestDoc", []byte{}, []byte{}, tlsCertFpr.Value).
-			Return(attestDoc, nil)
+		p.srv.On("Attest", []byte{}, []byte{}, tlsCertFpr.Value).
+			Return(attestation, nil)
 
 		response := getResponse(
 			p.srv,
@@ -176,7 +176,7 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 		p.Equal(http.StatusOK, response.StatusCode)
 
 		payload := responsePayload(p.T(), response)
-		p.Equal([]byte(attestDoc), payload)
+		p.Equal(attestation, payload)
 	})
 
 	p.Run("fail getting TLS cert", func() {
@@ -194,9 +194,9 @@ func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {
 		p.Contains(payload, nitriding.ErrFailedCert)
 	})
 
-	p.Run("fail getting attest doc", func() {
+	p.Run("fail getting attestation", func() {
 		p.srv.On("TLSCertFingerprint").Return(tlsCertFprBytes, nil)
-		p.srv.On("GetAttestDoc", nonce.Value, []byte{}, tlsCertFpr.Value).
+		p.srv.On("Attest", nonce.Value, []byte{}, tlsCertFpr.Value).
 			Return(nil, expErr)
 
 		response := getResponse(

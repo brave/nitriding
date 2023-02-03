@@ -36,7 +36,7 @@ system, take a look at our [research paper](https://arxiv.org/abs/2206.04123).
 
 For an example on how to create and check attestations see
 `examples/main_test.go`. The test runs `examples/main.go` to create a server
-based on a  `StandaloneAttester` that makes attestations on you local
+based on a  `SelfSignedAttester` that makes attestations on you local
 machine based on a self-signed certificate. `example/main.go` also contains
 instructions on how to configure a server based on a `NitroAttester` to
 create attestations using the Nitro Secure Module (NSM) on a Nitro Enclave.

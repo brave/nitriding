@@ -41,7 +41,7 @@ func MakeNitroAttester(session NSMSession) (NitroAttester, error) {
 	}, nil
 }
 
-func (attester NitroAttester) GetAttestDoc(
+func (attester NitroAttester) Attest(
 	nonce,
 	publicKey,
 	userData []byte,

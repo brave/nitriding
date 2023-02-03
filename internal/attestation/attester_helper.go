@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ErrCBORMarshal  = "could not marshal CoseBytes header"
+	ErrCBORMarshal  = "could not marshal to CBOR"
 	ErrPCRRead      = "could not read random PCR bytes"
 	ErrSignerCreate = "could not create COSE signer"
 	ErrMsgSign      = "could not sign COSE message"

@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 BLUE=\033[0;34m
 NC=\033[0m # No Color
 
@@ -29,19 +31,19 @@ test-unit: $(godeps)
 	@go test -cover `go list ./... | grep -v examples` -v -count=1
 
 test-live:
-	@echo -n "\n${BLUE}Starting server...${NC}"; \
+	@echo -e "\n${BLUE}Starting server...${NC}"; \
 	{ go run ./examples/main.go & }; \
 	go_pid=$$!; \
 	sleep 1; \
 	main_pid=$$(lsof -t -i:8443); \
-	echo "${BLUE}started with PID $$go_pid and $$main_pid${NC}"; \
-	echo "${BLUE}Running tests...${NC}"; \
+	echo -e "${BLUE}started with PID $$go_pid and $$main_pid${NC}"; \
+	echo -e "${BLUE}Running tests...${NC}"; \
 	go test -count=1 -v ./examples/...; \
 	r=$$?; \
-	echo -n "${BLUE}Tearing down server...${NC}"; \
+	echo -e "${BLUE}Tearing down server...${NC}"; \
 	kill -9 $$main_pid; \
 	kill -9 $$go_pid; \
-	echo "${BLUE}success${NC}"; \
+	echo -e "${BLUE}success${NC}"; \
 	exit $$r
 
 test: test-unit

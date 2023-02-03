@@ -22,7 +22,7 @@ func TestBaseAttesterHelper_MarshalCBOR(t *testing.T) {
 
 	cborBytes, err := attestation.BaseAttesterHelper{}.MarshalCBOR(obj)
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(cborBytesExp), cborBytes)
+	assert.Equal(t, cborBytesExp, cborBytes)
 }
 
 func TestBaseAttesterHelper_MakePCRs(t *testing.T) {

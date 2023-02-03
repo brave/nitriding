@@ -6,6 +6,6 @@ import (
 
 type NitroChecker struct{}
 
-func (_ NitroChecker) CheckAttestDoc(attestDoc []byte) (*nitrite.Result, error) {
-	return nitrite.Verify(attestDoc, nitrite.VerifyOptions{})
+func (_ NitroChecker) Check(attestation []byte) (*nitrite.Result, error) {
+	return nitrite.Verify(attestation, nitrite.VerifyOptions{})
 }

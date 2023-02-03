@@ -16,21 +16,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStandaloneAttesterBuilder_Interfaces(t *testing.T) {
-	builder := attestation.StandaloneAttesterBuilder{}
+func TestSelfSignedAttesterBuilder_Interfaces(t *testing.T) {
+	builder := attestation.SelfSignedAttesterBuilder{}
 	parlor.AssertType[internal.Builder[attestation.Attester]](t, builder)
 }
 
-func TestStandaloneAttester_Interfaces(t *testing.T) {
-	attester := attestation.StandaloneAttester{}
+func TestSelfSignedAttester_Interfaces(t *testing.T) {
+	attester := attestation.SelfSignedAttester{}
 	parlor.AssertType[attestation.Attester](t, attester)
 }
 
-func TestStandaloneAttesterBuilder_Build(t *testing.T) {
+func TestSelfSignedAttesterBuilder_Build(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		attesterBuilder := attestation.StandaloneAttesterBuilder{
-			CertDERBytes:       attestation.StandaloneAttesterCert,
-			PrivateKeyDERBytes: attestation.StandaloneAttesterPrivateKey,
+		attesterBuilder := attestation.SelfSignedAttesterBuilder{
+			CertDERBytes:       attestation.SelfSignedAttesterCert,
+			PrivateKeyDERBytes: attestation.SelfSignedAttesterPrivateKey,
 		}
 
 		attester, err := attesterBuilder.Build()
@@ -39,8 +39,8 @@ func TestStandaloneAttesterBuilder_Build(t *testing.T) {
 	})
 
 	t.Run("cannot parse private key", func(t *testing.T) {
-		attesterBuilder := attestation.StandaloneAttesterBuilder{
-			CertDERBytes:       attestation.StandaloneAttesterCert,
+		attesterBuilder := attestation.SelfSignedAttesterBuilder{
+			CertDERBytes:       attestation.SelfSignedAttesterCert,
 			PrivateKeyDERBytes: nil,
 		}
 
@@ -50,9 +50,9 @@ func TestStandaloneAttesterBuilder_Build(t *testing.T) {
 	})
 
 	t.Run("cannot parse private key", func(t *testing.T) {
-		attesterBuilder := attestation.StandaloneAttesterBuilder{
+		attesterBuilder := attestation.SelfSignedAttesterBuilder{
 			CertDERBytes:       nil,
-			PrivateKeyDERBytes: attestation.StandaloneAttesterPrivateKey,
+			PrivateKeyDERBytes: attestation.SelfSignedAttesterPrivateKey,
 		}
 
 		attester, err := attesterBuilder.Build()
@@ -61,23 +61,23 @@ func TestStandaloneAttesterBuilder_Build(t *testing.T) {
 	})
 }
 
-func TestMakeStandaloneAttester(t *testing.T) {
+func TestMakeSelfSignedAttester(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		cert := certificate.BasePrivilegedCert{}
 
-		attester, err := attestation.MakeStandaloneAttester(cert)
+		attester, err := attestation.MakeSelfSignedAttester(cert)
 		assert.NoError(t, err)
-		assert.NotEqual(t, attestation.StandaloneAttester{}, attester)
+		assert.NotEqual(t, attestation.SelfSignedAttester{}, attester)
 	})
 
 	t.Run("nil cert", func(t *testing.T) {
-		attester, err := attestation.MakeStandaloneAttester(nil)
+		attester, err := attestation.MakeSelfSignedAttester(nil)
 		assert.ErrorContains(t, err, attestation.ErrNilCert)
-		assert.Equal(t, attestation.StandaloneAttester{}, attester)
+		assert.Equal(t, attestation.SelfSignedAttester{}, attester)
 	})
 }
 
-func TestStandaloneAttester_GetAttestDoc_NoMock(t *testing.T) {
+func TestSelfSignedAttester_GetAttestDoc_NoMock(t *testing.T) {
 	happyPathTests := map[string]struct {
 		nonce     []byte
 		userData  []byte
@@ -97,48 +97,48 @@ func TestStandaloneAttester_GetAttestDoc_NoMock(t *testing.T) {
 			assert.NoError(t, err)
 			require.NotNil(t, cert)
 
-			attester, err := attestation.MakeStandaloneAttester(cert)
+			attester, err := attestation.MakeSelfSignedAttester(cert)
 			assert.NoError(t, err)
 			require.NotNil(t, attester)
 
-			attestDoc, err := attester.GetAttestDoc(
+			attest, err := attester.Attest(
 				tc.nonce,
 				tc.publicKey,
 				tc.userData)
 			assert.NoError(t, err)
-			require.NotNil(t, attestDoc)
+			require.NotNil(t, attest)
 
-			checker := attestation.StandaloneChecker{}
-			attest, err := checker.CheckAttestDoc(attestDoc)
+			checker := attestation.SelfSignedChecker{}
+			checkedAttest, err := checker.Check(attest)
 			assert.NoError(t, err)
 
-			assert.Equal(t, tc.nonce, attest.Document.Nonce)
-			assert.Equal(t, tc.publicKey, attest.Document.PublicKey)
-			assert.Equal(t, tc.userData, attest.Document.UserData)
+			assert.Equal(t, tc.nonce, checkedAttest.Document.Nonce)
+			assert.Equal(t, tc.publicKey, checkedAttest.Document.PublicKey)
+			assert.Equal(t, tc.userData, checkedAttest.Document.UserData)
 		})
 	}
 }
 
-type StandaloneAttesterParlor struct {
+type SelfSignedAttesterParlor struct {
 	parlor.Parlor
 	cert   *mocks.PrivilegedCert
 	helper *mocks.AttesterHelper
 }
 
-func TestStandaloneAttesterParlor(t *testing.T) {
-	parlor.Run(t, new(StandaloneAttesterParlor))
+func TestSelfSignedAttesterParlor(t *testing.T) {
+	parlor.Run(t, new(SelfSignedAttesterParlor))
 }
 
-func (p *StandaloneAttesterParlor) SetupSubtest() {
+func (p *SelfSignedAttesterParlor) SetupSubtest() {
 	p.cert = mocks.NewPrivilegedCert(p.T())
 	p.helper = mocks.NewAttesterHelper(p.T())
 }
 
-func (p *StandaloneAttesterParlor) makeAttester() attestation.StandaloneAttester {
-	return attestation.MakeStandaloneAttesterFromRaw(p.cert, p.helper)
+func (p *SelfSignedAttesterParlor) makeAttester() attestation.SelfSignedAttester {
+	return attestation.MakeSelfSignedAttesterFromRaw(p.cert, p.helper)
 }
 
-func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
+func (p *SelfSignedAttesterParlor) TestGetAttestDoc() {
 	nonce := nitridingtest.MakeRandBytes(p.T(), 20)
 	userData := nitridingtest.MakeRandBytes(p.T(), 20)
 	helper := attestation.BaseAttesterHelper{}
@@ -185,9 +185,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 			mock.AnythingOfType("nitrite.CosePayload"),
 		).Return(cosePayloadBytes, nil)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.NoError(err)
-		p.Equal(cosePayloadBytes, attestDoc)
+		p.Equal(cosePayloadBytes, attest)
 	})
 
 	p.Run("error marshalling COSE header", func() {
@@ -198,20 +198,20 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 			expErr,
 		)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(attestDoc)
+		p.Nil(attest)
 	})
 
 	p.Run("error making PCRs", func() {
-		attester := attestation.MakeStandaloneAttesterFromRaw(p.cert, p.helper)
+		attester := attestation.MakeSelfSignedAttesterFromRaw(p.cert, p.helper)
 
 		p.helper.On("MarshalCBOR", coseHeader).Return(coseHeaderBytes, nil)
 		p.helper.On("MakePCRs").Return(pcrs, expErr)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(attestDoc)
+		p.Nil(attest)
 	})
 
 	p.Run("error marshalling doc", func() {
@@ -223,9 +223,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MarshalCBOR", mock.AnythingOfType("nitrite.Document")).
 			Return(docBytes, expErr)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(attestDoc)
+		p.Nil(attest)
 	})
 
 	p.Run("error making COSE message", func() {
@@ -240,9 +240,9 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		p.helper.On("MakeCOSEMessage", []byte(docBytes), privateKey).
 			Return(nil, expErr)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(attestDoc)
+		p.Nil(attest)
 	})
 
 	p.Run("error marshalling COSE payload", func() {
@@ -262,8 +262,8 @@ func (p *StandaloneAttesterParlor) TestGetAttestDoc() {
 		).
 			Return(nil, expErr)
 
-		attestDoc, err := attester.GetAttestDoc(nonce, nil, userData)
+		attest, err := attester.Attest(nonce, nil, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(attestDoc)
+		p.Nil(attest)
 	})
 }

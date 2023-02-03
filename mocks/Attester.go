@@ -10,7 +10,7 @@ type Attester struct {
 }
 
 // GetAttestDoc provides a mock function with given fields: nonce, publicKey, userData
-func (_m *Attester) GetAttestDoc(nonce []byte, publicKey []byte, userData []byte) ([]byte, error) {
+func (_m *Attester) Attest(nonce []byte, publicKey []byte, userData []byte) ([]byte, error) {
 	ret := _m.Called(nonce, publicKey, userData)
 
 	var r0 []byte

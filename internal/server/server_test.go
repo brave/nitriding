@@ -51,7 +51,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("happy path", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, nil)
+			Return(attestation.SelfSignedAttester{}, nil)
 		p.tlsBundleBuilder.On("Build").
 			Return(p.tlsBundle, nil)
 		p.proxyBuilder.On("ConfigureSOCKSProxy").Return(nil)
@@ -71,7 +71,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("cannot build attester", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, expErr)
+			Return(attestation.SelfSignedAttester{}, expErr)
 
 		builder := server.BaseServerBuilder{
 			AttesterBuilder:   p.attesterBuilder,
@@ -86,7 +86,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("cannot build TLS bundle", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, nil)
+			Return(attestation.SelfSignedAttester{}, nil)
 		p.tlsBundleBuilder.On("Build").
 			Return(p.nilTLSBundle, expErr)
 
@@ -103,7 +103,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("cannot configure socks proxy", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, nil)
+			Return(attestation.SelfSignedAttester{}, nil)
 		p.tlsBundleBuilder.On("Build").
 			Return(p.tlsBundle, nil)
 		p.proxyBuilder.On("ConfigureSOCKSProxy").Return(expErr)
@@ -121,7 +121,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("cannot configure viproxy", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, nil)
+			Return(attestation.SelfSignedAttester{}, nil)
 		p.tlsBundleBuilder.On("Build").
 			Return(p.tlsBundle, nil)
 		p.proxyBuilder.On("ConfigureSOCKSProxy").Return(nil)
@@ -140,7 +140,7 @@ func (p *BaseServerBuilderParlor) TestBuild() {
 
 	p.Run("cannot get TLS config", func() {
 		p.attesterBuilder.On("Build").
-			Return(attestation.StandaloneAttester{}, nil)
+			Return(attestation.SelfSignedAttester{}, nil)
 		p.tlsBundleBuilder.On("Build").
 			Return(p.tlsBundle, nil)
 		p.proxyBuilder.On("ConfigureSOCKSProxy").Return(nil)
@@ -168,31 +168,31 @@ func TestBaseServer_GetAttestDoc(t *testing.T) {
 	nonce := []byte("nonce")
 	publicKey := []byte("public key")
 	userData := []byte("user data")
-	attestDoc := []byte("attest doc")
+	attest := []byte("attestation")
 	expErr := errors.New("expected error")
 
 	t.Run("happy path", func(t *testing.T) {
 		attester := mocks.NewAttester(t)
 
-		attester.On("GetAttestDoc", nonce, publicKey, userData).
-			Return(attestDoc, nil)
+		attester.On("Attest", nonce, publicKey, userData).
+			Return(attest, nil)
 
 		srv := server.NewPartialBaseServerFromRaw(attester, nil)
 
-		outAttestDoc, err := srv.GetAttestDoc(nonce, publicKey, userData)
+		outAttestDoc, err := srv.Attest(nonce, publicKey, userData)
 		assert.NoError(t, err)
-		assert.Equal(t, attestDoc, outAttestDoc)
+		assert.Equal(t, attest, outAttestDoc)
 	})
 
 	t.Run("attester error", func(t *testing.T) {
 		attester := mocks.NewAttester(t)
 
-		attester.On("GetAttestDoc", nonce, publicKey, userData).
+		attester.On("Attest", nonce, publicKey, userData).
 			Return(nil, expErr)
 
 		srv := server.NewPartialBaseServerFromRaw(attester, nil)
 
-		outAttestDoc, err := srv.GetAttestDoc(nonce, publicKey, userData)
+		outAttestDoc, err := srv.Attest(nonce, publicKey, userData)
 		assert.Equal(t, expErr, err)
 		assert.Nil(t, outAttestDoc)
 	})
@@ -240,7 +240,7 @@ func TestBaseServer_AddRoute(t *testing.T) {
 		"some url",
 		1234,
 		tlsBundle,
-		attestation.StandaloneAttester{},
+		attestation.SelfSignedAttester{},
 		true,
 	)
 	require.NoError(t, err)

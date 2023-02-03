@@ -12,13 +12,13 @@ type Checker struct {
 	mock.Mock
 }
 
-// CheckAttestDoc provides a mock function with given fields: attestDoc
-func (_m *Checker) CheckAttestDoc(attestDoc []byte) (*nitrite.Result, error) {
-	ret := _m.Called(attestDoc)
+// CheckAttestDoc provides a mock function with given fields: attest
+func (_m *Checker) Check(attest []byte) (*nitrite.Result, error) {
+	ret := _m.Called(attest)
 
 	var r0 *nitrite.Result
 	if rf, ok := ret.Get(0).(func([]byte) *nitrite.Result); ok {
-		r0 = rf(attestDoc)
+		r0 = rf(attest)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*nitrite.Result)
@@ -27,7 +27,7 @@ func (_m *Checker) CheckAttestDoc(attestDoc []byte) (*nitrite.Result, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]byte) error); ok {
-		r1 = rf(attestDoc)
+		r1 = rf(attest)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -6,8 +6,8 @@ import (
 
 type Checker attestation.Checker
 
-func MakeStandaloneChecker() Checker {
-	return attestation.StandaloneChecker{}
+func MakeSelfSignedChecker() Checker {
+	return attestation.SelfSignedChecker{}
 }
 
 func MakeNitroChecker() Checker {

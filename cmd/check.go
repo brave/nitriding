@@ -18,15 +18,15 @@ var checkCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var checker nitriding.Checker = nitriding.MakeNitroChecker()
 		if !nsm {
-			checker = nitriding.MakeStandaloneChecker()
+			checker = nitriding.MakeSelfSignedChecker()
 		}
 
-		attestDoc, err := base64.StdEncoding.DecodeString(args[0])
+		attest, err := base64.StdEncoding.DecodeString(args[0])
 		if err != nil {
 			return fmt.Errorf("could not decode attestation string: %w", err)
 		}
 
-		result, err := checker.CheckAttestDoc(attestDoc)
+		result, err := checker.Check(attest)
 		if err != nil {
 			return fmt.Errorf("could not verify attestation: %w", err)
 		}

@@ -14,7 +14,7 @@ var (
 	ErrBadForm       = "failed to parse POST form data"
 	ErrBadNonce      = "unexpected nonce format"
 	ErrRespWrite     = "could not write a getResponse"
-	ErrAttest        = "cannot obtain attestation document"
+	ErrAttest        = "cannot obtain attestation"
 	ErrFailedCert    = "cannot obtain certificate"
 	ErrNilServer     = "server cannot be nil"
 	ErrNilRequest    = "request cannot be nil"
@@ -111,12 +111,12 @@ func GetAttesterHandler(srv server.Server, rw http.ResponseWriter, req *http.Req
 	}
 
 	// pass in the []byte values once validated
-	attestDoc, err := srv.GetAttestDoc(nonce.Value, []byte{}, tlsCertFpr.Value)
+	attestation, err := srv.Attest(nonce.Value, []byte{}, tlsCertFpr.Value)
 	if handleError(rw, err, http.StatusInternalServerError, ErrAttest) {
 		return
 	}
 
-	_, err = rw.Write(attestDoc)
+	_, err = rw.Write(attestation)
 	if handleError(rw, err, http.StatusInternalServerError, ErrRespWrite) {
 		return
 	}

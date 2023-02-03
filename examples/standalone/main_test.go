@@ -38,8 +38,8 @@ func Example() {
 	}
 
 	// Check that the attestation is correctly signed
-	checker := nitriding.MakeStandaloneChecker()
-	attest, err := checker.CheckAttestDoc(body)
+	checker := nitriding.MakeSelfSignedChecker()
+	checkedAttest, err := checker.Check(body)
 	if err != nil {
 		log.Println(err)
 		return
@@ -47,13 +47,13 @@ func Example() {
 	fmt.Println("Attestation verified against its self-signed certificate")
 
 	// Check the request nonce
-	if bytes.Compare(nonce.Value, attest.Document.Nonce) == 0 {
+	if bytes.Compare(nonce.Value, checkedAttest.Document.Nonce) == 0 {
 		fmt.Println("Request and response nonces match")
 	}
 
 	// Check that the TLS certificate used by our connection to the server
 	// matches that which the attester uses to connect to us
-	attTLSCertFpr := nitriding.TLSCertFpr{Value: attest.Document.UserData}
+	attTLSCertFpr := nitriding.TLSCertFpr{Value: checkedAttest.Document.UserData}
 	err = validator.New().Struct(&attTLSCertFpr)
 	if err != nil {
 		log.Println(err)

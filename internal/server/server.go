@@ -184,7 +184,7 @@ func (server *BaseServer) Start() error {
 	return server.httpSrv.ServeTLS(listener, "", "")
 }
 
-func (server *BaseServer) GetAttestDoc(
+func (server *BaseServer) Attest(
 	nonce,
 	publicKey,
 	userData []byte,
@@ -192,7 +192,7 @@ func (server *BaseServer) GetAttestDoc(
 	[]byte,
 	error,
 ) {
-	return server.attester.GetAttestDoc(nonce, publicKey, userData)
+	return server.attester.Attest(nonce, publicKey, userData)
 }
 
 func (server *BaseServer) TLSCertFingerprint() (

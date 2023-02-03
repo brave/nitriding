@@ -12,18 +12,18 @@ const (
 	ErrDocVerify = "could not verify attestation doc"
 )
 
-type StandaloneChecker struct {
+type SelfSignedChecker struct {
 }
 
-func (_ StandaloneChecker) CheckAttestDoc(
-	attestDoc []byte,
+func (_ SelfSignedChecker) Check(
+	attestation []byte,
 ) (
 	*nitrite.Result,
 	error,
 ) {
 	roots := x509.NewCertPool()
 	res, err := nitrite.Verify(
-		attestDoc, nitrite.VerifyOptions{
+		attestation, nitrite.VerifyOptions{
 			Roots:               roots,
 			CurrentTime:         time.Now(),
 			AllowSelfSignedCert: true,

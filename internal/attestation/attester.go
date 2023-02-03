@@ -7,5 +7,5 @@ import (
 const COSEAlgorithm = cose.AlgorithmES384
 
 type Attester interface {
-	GetAttestDoc(nonce, publicKey, userData []byte) (attestDoc []byte, err error)
+	Attest(nonce, publicKey, userData []byte) (attestation []byte, err error)
 }

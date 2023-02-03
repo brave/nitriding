@@ -16,11 +16,11 @@ const (
 	ErrMakeCert        = "could not make attester certificate"
 )
 
-// The StandaloneAttesterCert and StandaloneAttesterPrivateKey represent the
-// inputs to StandaloneAttesterBuilder to build a standalone attester.
-// The StandaloneAttester is intended for testing and hard-coding these values
+// The SelfSignedAttesterCert and SelfSignedAttesterPrivateKey represent the
+// inputs to SelfSignedAttesterBuilder to build a standalone attester.
+// The SelfSignedAttester is intended for testing and hard-coding these values
 // makes them easily available for verification of attestations in testing.
-var StandaloneAttesterCert = []byte{48, 130, 1, 182, 48, 130, 1, 60, 160, 3,
+var SelfSignedAttesterCert = []byte{48, 130, 1, 182, 48, 130, 1, 60, 160, 3,
 	2, 1, 2, 2, 17, 0, 152, 38, 171, 126, 204, 18, 169, 6, 105, 123, 192, 41,
 	56, 255, 48, 113, 48, 10, 6, 8, 42, 134, 72, 206, 61, 4, 3, 3, 48, 11,
 	49, 9, 48, 7, 6, 3, 85, 4, 10, 19, 0, 48, 30, 23, 13, 50, 50, 49, 48, 50,
@@ -47,7 +47,7 @@ var StandaloneAttesterCert = []byte{48, 130, 1, 182, 48, 130, 1, 60, 160, 3,
 	31, 85, 201, 94, 42, 44, 165, 106, 204, 57, 140, 191, 185, 207, 75, 173,
 	205, 30, 5, 20, 142, 64, 49, 214}
 
-var StandaloneAttesterPrivateKey = []byte{48, 129, 164, 2, 1, 1, 4, 48, 165,
+var SelfSignedAttesterPrivateKey = []byte{48, 129, 164, 2, 1, 1, 4, 48, 165,
 	232, 114, 32, 183, 252, 58, 14, 147, 139, 80, 75, 69, 213, 204, 243, 112,
 	102, 63, 67, 0, 126, 80, 60, 17, 139, 28, 16, 104, 45, 79, 30, 178, 230,
 	195, 229, 40, 140, 224, 30, 9, 211, 128, 194, 170, 149, 243, 89, 160, 7,
@@ -59,17 +59,17 @@ var StandaloneAttesterPrivateKey = []byte{48, 129, 164, 2, 1, 1, 4, 48, 165,
 	8, 87, 250, 49, 119, 101, 195, 215, 0, 220, 41, 80, 129, 247, 65, 204,
 	13, 28, 12, 212, 179, 189, 215, 112, 140, 184}
 
-type StandaloneAttester struct {
+type SelfSignedAttester struct {
 	cert   certificate.PrivilegedCert
 	helper AttesterHelper
 }
 
-type StandaloneAttesterBuilder struct {
+type SelfSignedAttesterBuilder struct {
 	CertDERBytes       []byte
 	PrivateKeyDERBytes []byte
 }
 
-func (builder StandaloneAttesterBuilder) Build() (Attester, error) {
+func (builder SelfSignedAttesterBuilder) Build() (Attester, error) {
 	privateKey, err := x509.ParseECPrivateKey(builder.PrivateKeyDERBytes)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", ErrParsePrivateKey, err)
@@ -84,29 +84,29 @@ func (builder StandaloneAttesterBuilder) Build() (Attester, error) {
 		return nil, fmt.Errorf("%v: %w", ErrMakeCert, err)
 	}
 
-	return MakeStandaloneAttester(cert)
+	return MakeSelfSignedAttester(cert)
 }
 
-func MakeStandaloneAttester(
+func MakeSelfSignedAttester(
 	cert certificate.PrivilegedCert,
 ) (
-	StandaloneAttester,
+	SelfSignedAttester,
 	error,
 ) {
 	if cert == nil {
-		return StandaloneAttester{}, errors.New(ErrNilCert)
+		return SelfSignedAttester{}, errors.New(ErrNilCert)
 	}
-	return MakeStandaloneAttesterFromRaw(cert, BaseAttesterHelper{}), nil
+	return MakeSelfSignedAttesterFromRaw(cert, BaseAttesterHelper{}), nil
 }
 
-func MakeStandaloneAttesterFromRaw(
+func MakeSelfSignedAttesterFromRaw(
 	cert certificate.PrivilegedCert,
 	helper AttesterHelper,
-) StandaloneAttester {
-	return StandaloneAttester{cert: cert, helper: helper}
+) SelfSignedAttester {
+	return SelfSignedAttester{cert: cert, helper: helper}
 }
 
-func (attester StandaloneAttester) GetAttestDoc(
+func (attester SelfSignedAttester) Attest(
 	nonce,
 	publicKey,
 	userData []byte,

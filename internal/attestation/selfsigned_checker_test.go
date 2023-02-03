@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStandaloneChecker_Interfaces(t *testing.T) {
-	checker := attestation.StandaloneChecker{}
+func TestSelfSignedChecker_Interfaces(t *testing.T) {
+	checker := attestation.SelfSignedChecker{}
 	parlor.AssertType[attestation.Checker](t, checker)
 }
 
-func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
+func TestSelfSignedChecker_CheckAttestDoc(t *testing.T) {
 	nonce := nitridingtest.MakeRandBytes(t, 20)
 	userData := nitridingtest.MakeRandBytes(t, 512)
 	publicKey := nitridingtest.MakeRandBytes(t, 1024)
@@ -25,18 +25,18 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, attestCert)
 
-	attester, err := attestation.MakeStandaloneAttester(attestCert)
+	attester, err := attestation.MakeSelfSignedAttester(attestCert)
 	assert.NoError(t, err)
 	require.NotNil(t, attester)
 
-	attestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+	attest, err := attester.Attest(nonce, publicKey, userData)
 	assert.NoError(t, err)
-	require.NotNil(t, attestDoc)
+	require.NotNil(t, attest)
 
-	checker := attestation.StandaloneChecker{}
+	checker := attestation.SelfSignedChecker{}
 
 	t.Run("happy path", func(t *testing.T) {
-		result, err := checker.CheckAttestDoc(attestDoc)
+		result, err := checker.Check(attest)
 		assert.NoError(t, err)
 
 		assert.Equal(t, nonce, result.Document.Nonce)
@@ -44,14 +44,14 @@ func TestStandaloneChecker_CheckAttestDoc(t *testing.T) {
 		assert.Equal(t, userData, result.Document.UserData)
 	})
 
-	t.Run("nil attestation document", func(t *testing.T) {
-		result, err := checker.CheckAttestDoc(nil)
+	t.Run("nil attestation", func(t *testing.T) {
+		result, err := checker.Check(nil)
 		assert.ErrorContains(t, err, attestation.ErrDocVerify)
 		assert.Nil(t, result)
 	})
 
-	t.Run("empty attestation document", func(t *testing.T) {
-		result, err := checker.CheckAttestDoc([]byte{})
+	t.Run("empty attestation", func(t *testing.T) {
+		result, err := checker.Check([]byte{})
 		assert.ErrorContains(t, err, attestation.ErrDocVerify)
 		assert.Nil(t, result)
 	})

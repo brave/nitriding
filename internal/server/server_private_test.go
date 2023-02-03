@@ -21,7 +21,7 @@ func TestNewBaseServer(t *testing.T) {
 	require.NoError(t, err)
 	tlsConfig, err := tlsBundle.GetConfig()
 	require.NoError(t, err)
-	attester := attestation.StandaloneAttester{}
+	attester := attestation.SelfSignedAttester{}
 
 	srv, err := NewBaseServer(appURL, appPort, tlsBundle, attester, true)
 	assert.NoError(t, err)

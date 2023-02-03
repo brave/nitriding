@@ -63,7 +63,7 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 	nonce := []byte("nonce")
 	userData := []byte("user data")
 	publicKey := []byte("key bytes")
-	attestDoc := []byte("attestDoc")
+	attest := []byte("attestation")
 	expErr := errors.New("expected error")
 
 	p.Run("happy path", func() {
@@ -73,7 +73,7 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 			PublicKey: publicKey,
 		}
 		attestRes := response.Response{
-			Attestation: &response.Attestation{Document: attestDoc},
+			Attestation: &response.Attestation{Document: attest},
 		}
 
 		p.nsmSession.On("Send", &attestReq).Return(attestRes, nil)
@@ -81,9 +81,9 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		attester, err := attestation.MakeNitroAttester(p.nsmSession)
 		p.NoError(err)
 
-		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+		outAttest, err := attester.Attest(nonce, publicKey, userData)
 		p.NoError(err)
-		p.Equal(attestDoc, outAttestDoc)
+		p.Equal(attest, outAttest)
 	})
 
 	p.Run("session.Send error", func() {
@@ -95,9 +95,9 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		attester, err := attestation.MakeNitroAttester(p.nsmSession)
 		p.NoError(err)
 
-		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+		outAttest, err := attester.Attest(nonce, publicKey, userData)
 		p.ErrorIs(err, expErr)
-		p.Nil(outAttestDoc)
+		p.Nil(outAttest)
 	})
 
 	p.Run("session.Send returns nil attestation", func() {
@@ -109,12 +109,12 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		attester, err := attestation.MakeNitroAttester(p.nsmSession)
 		p.NoError(err)
 
-		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+		outAttest, err := attester.Attest(nonce, publicKey, userData)
 		p.ErrorContains(err, attestation.ErrNSM)
-		p.Nil(outAttestDoc)
+		p.Nil(outAttest)
 	})
 
-	p.Run("session.Send returns nil attestDoc", func() {
+	p.Run("session.Send returns nil attestation", func() {
 		p.nsmSession.On("Send", mock.Anything).Return(
 			response.Response{
 				Attestation: &response.Attestation{Document: nil},
@@ -125,8 +125,8 @@ func (p *NitroAttesterParlor) TestGetAttestDoc() {
 		attester, err := attestation.MakeNitroAttester(p.nsmSession)
 		p.NoError(err)
 
-		outAttestDoc, err := attester.GetAttestDoc(nonce, publicKey, userData)
+		outAttest, err := attester.Attest(nonce, publicKey, userData)
 		p.ErrorContains(err, attestation.ErrNSM)
-		p.Nil(outAttestDoc)
+		p.Nil(outAttest)
 	})
 }

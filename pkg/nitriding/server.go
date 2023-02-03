@@ -43,9 +43,9 @@ func NewServer(
 		}
 		attesterBuilder = attestation.NitroAttesterBuilder{NSMSession: session}
 	} else {
-		attesterBuilder = attestation.StandaloneAttesterBuilder{
-			CertDERBytes:       attestation.StandaloneAttesterCert,
-			PrivateKeyDERBytes: attestation.StandaloneAttesterPrivateKey,
+		attesterBuilder = attestation.SelfSignedAttesterBuilder{
+			CertDERBytes:       attestation.SelfSignedAttesterCert,
+			PrivateKeyDERBytes: attestation.SelfSignedAttesterPrivateKey,
 		}
 	}
 

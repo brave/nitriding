@@ -5,5 +5,5 @@ import (
 )
 
 type Checker interface {
-	CheckAttestDoc(attestDoc []byte) (*nitrite.Result, error)
+	Check(attestation []byte) (*nitrite.Result, error)
 }
