@@ -7,6 +7,7 @@ import (
 	"os"
 	"unsafe"
 
+	"github.com/blocky/nitriding/pkg/nitriding"
 	"github.com/hf/nsm"
 	"github.com/hf/nsm/request"
 
@@ -24,7 +25,7 @@ const (
 // entropy, which means that calls to /dev/(u)random will block.
 func init() {
 	// Abort if we're not in an enclave, or if we can't tell if we are.
-	inEnclave, err := InEnclave()
+	inEnclave, err := nitriding.InEnclave()
 	if err != nil || !inEnclave {
 		return
 	}

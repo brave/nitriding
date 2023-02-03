@@ -36,7 +36,7 @@ func TestPrivilegedCertTLSBundle_GetCert(t *testing.T) {
 
 func TestPrivilegedCertTLSBundle_GetConfig(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		cert := new(mocks.PrivilegedCert)
+		cert := mocks.NewPrivilegedCert(t)
 		// make tlsCert different from a default tls.Certificate{}
 		tlsCert := tls.Certificate{OCSPStaple: []byte("some unique bytes")}
 
@@ -49,12 +49,10 @@ func TestPrivilegedCertTLSBundle_GetConfig(t *testing.T) {
 		require.NotNil(t, config)
 		require.Positive(t, len(config.Certificates))
 		assert.Equal(t, tlsCert, config.Certificates[0])
-
-		cert.AssertExpectations(t)
 	})
 
 	t.Run("cannot get TLSCert", func(t *testing.T) {
-		cert := new(mocks.PrivilegedCert)
+		cert := mocks.NewPrivilegedCert(t)
 		expErr := errors.New("expected error")
 
 		cert.On("TLSCertificate").Return(tls.Certificate{}, expErr)
@@ -65,8 +63,6 @@ func TestPrivilegedCertTLSBundle_GetConfig(t *testing.T) {
 		assert.ErrorContains(t, err, server.ErrGetTLSCert)
 		assert.ErrorIs(t, err, expErr)
 		assert.Nil(t, config)
-
-		cert.AssertExpectations(t)
 	})
 }
 
@@ -90,7 +86,7 @@ func TestCertMgrTLSBundle_GetCert(t *testing.T) {
 	})
 
 	t.Run("happy path - new cert", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetCert", mock.Anything, fqdn).Return(cert, nil)
 
@@ -99,12 +95,10 @@ func TestCertMgrTLSBundle_GetCert(t *testing.T) {
 		cert, err := tlsBundle.GetCert(context.Background())
 		assert.NoError(t, err)
 		assert.NotNil(t, cert)
-
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("cache context timeout", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetCert", mock.Anything, fqdn).
 			Return(nil, errors.New(certificate.ErrGetCertFromCache)).
@@ -123,12 +117,10 @@ func TestCertMgrTLSBundle_GetCert(t *testing.T) {
 		cert, err := tlsBundle.GetCert(context.Background())
 		assert.NoError(t, err)
 		assert.NotNil(t, cert)
-
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("fail get cert", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 		expErr := errors.New("expected error")
 
 		certMgr.On("GetCert", mock.Anything, fqdn).Return(nil, expErr)
@@ -138,12 +130,10 @@ func TestCertMgrTLSBundle_GetCert(t *testing.T) {
 		cert, err := tlsBundle.GetCert(context.Background())
 		assert.ErrorIs(t, err, expErr)
 		assert.Nil(t, cert)
-
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("context canceled", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetCert", mock.Anything, fqdn).
 			Return(nil, errors.New(certificate.ErrGetCertFromCache)).
@@ -162,9 +152,6 @@ func TestCertMgrTLSBundle_GetCert(t *testing.T) {
 		cert, err := tlsBundle.GetCert(ctx)
 		assert.ErrorIs(t, err, context.Canceled)
 		assert.Nil(t, cert)
-
-		certMgr.AssertExpectations(t)
-
 	})
 }
 
@@ -172,7 +159,7 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 	fqdn := "test.com"
 
 	t.Run("happy path", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetConfig").Return(&tls.Config{}, nil)
 
@@ -181,12 +168,10 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 		config, err := tlsBundle.GetConfig()
 		assert.NoError(t, err)
 		assert.NotNil(t, config)
-
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("fail getting config", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 		expErr := errors.New("expected error")
 
 		certMgr.On("GetConfig").Return(nil, expErr)
@@ -196,8 +181,6 @@ func TestCertMgrTLSBundle_GetConfig(t *testing.T) {
 		config, err := tlsBundle.GetConfig()
 		assert.ErrorIs(t, err, expErr)
 		assert.Nil(t, config)
-
-		certMgr.AssertExpectations(t)
 	})
 }
 
@@ -208,7 +191,7 @@ func TestSelfSignedTLSBundleBuilder_Interfaces(t *testing.T) {
 
 func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		certBuilder := new(mocks.Builder[certificate.PrivilegedCert])
+		certBuilder := mocks.NewBuilder[certificate.PrivilegedCert](t)
 		cert, err := certificate.MakeBasePrivilegedCert("", "", false)
 		require.NoError(t, err)
 		require.NotEqual(t, certificate.BasePrivilegedCertBuilder{}, cert)
@@ -226,13 +209,11 @@ func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 		outCert, err := tlsBundle.GetCert(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, cert, outCert)
-
-		certBuilder.AssertExpectations(t)
 	})
 
 	t.Run("error making cert", func(t *testing.T) {
-		certBuilder := new(mocks.Builder[certificate.PrivilegedCert])
-		nilCert := new(mocks.PrivilegedCert)
+		certBuilder := mocks.NewBuilder[certificate.PrivilegedCert](t)
+		nilCert := mocks.NewPrivilegedCert(t)
 		expErr := errors.New("expected error")
 
 		certBuilder.On("Build").Return(nilCert, expErr)
@@ -244,9 +225,6 @@ func TestSelfSignedTLSBundleBuilder_Build(t *testing.T) {
 		tlsBundle, err := tlsBundleBuilder.Build()
 		assert.ErrorIs(t, err, expErr)
 		assert.Nil(t, tlsBundle)
-
-		certBuilder.AssertExpectations(t)
-		nilCert.AssertExpectations(t)
 	})
 }
 
@@ -259,8 +237,8 @@ func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {
 	fqdn := "test.com"
 
 	t.Run("happy path", func(t *testing.T) {
-		certMgrBuilder := new(mocks.Builder[certificate.CertMgr])
-		certMgr := new(mocks.CertMgr)
+		certMgrBuilder := mocks.NewBuilder[certificate.CertMgr](t)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgrBuilder.On("Build").Return(certMgr, nil)
 		certMgr.On("Start").Return(nil)
@@ -273,14 +251,11 @@ func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {
 		tlsBundle, err := tlsBundleBuilder.Build()
 		assert.NoError(t, err)
 		assert.NotNil(t, tlsBundle)
-
-		certMgrBuilder.AssertExpectations(t)
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("cannot make certMgr", func(t *testing.T) {
-		certMgrBuilder := new(mocks.Builder[certificate.CertMgr])
-		nilCertMgr := new(mocks.CertMgr)
+		certMgrBuilder := mocks.NewBuilder[certificate.CertMgr](t)
+		nilCertMgr := mocks.NewCertMgr(t)
 		expErr := errors.New("expected error")
 
 		certMgrBuilder.On("Build").Return(nilCertMgr, expErr)
@@ -293,13 +268,10 @@ func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {
 		tlsBundle, err := tlsBundleBuilder.Build()
 		assert.ErrorIs(t, err, expErr)
 		assert.Nil(t, tlsBundle)
-
-		certMgrBuilder.AssertExpectations(t)
-		nilCertMgr.AssertExpectations(t)
 	})
 
 	t.Run("cannot start certMgr", func(t *testing.T) {
-		certMgrBuilder := new(mocks.Builder[certificate.CertMgr])
+		certMgrBuilder := mocks.NewBuilder[certificate.CertMgr](t)
 
 		certMgrBuilder.On("Build").Return(certificate.ACMECertMgr{}, nil)
 
@@ -311,7 +283,5 @@ func TestCertMgrTLSBundleBuilder_Build(t *testing.T) {
 		tlsBundle, err := tlsBundleBuilder.Build()
 		assert.ErrorContains(t, err, server.ErrMgrStart)
 		assert.Nil(t, tlsBundle)
-
-		certMgrBuilder.AssertExpectations(t)
 	})
 }

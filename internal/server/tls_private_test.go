@@ -16,7 +16,7 @@ func TestMakeCertMgrTLSBundle_GetCachedCert(t *testing.T) {
 	fqdn := "test.com"
 
 	t.Run("happy path", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetCert", mock.Anything, fqdn).
 			Return(certificate.BaseCert{}, nil)
@@ -26,12 +26,10 @@ func TestMakeCertMgrTLSBundle_GetCachedCert(t *testing.T) {
 		cert, err := tlsBundle.getCachedCert(time.Second)
 		assert.NoError(t, err)
 		assert.NotNil(t, cert)
-
-		certMgr.AssertExpectations(t)
 	})
 
 	t.Run("context timeout", func(t *testing.T) {
-		certMgr := new(mocks.CertMgr)
+		certMgr := mocks.NewCertMgr(t)
 
 		certMgr.On("GetCert", mock.Anything, fqdn).
 			Return(nil, context.DeadlineExceeded)
@@ -41,8 +39,6 @@ func TestMakeCertMgrTLSBundle_GetCachedCert(t *testing.T) {
 		cert, err := tlsBundle.getCachedCert(time.Second)
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 		assert.Nil(t, cert)
-
-		certMgr.AssertExpectations(t)
 	})
 }
 

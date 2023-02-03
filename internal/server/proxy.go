@@ -39,7 +39,6 @@ func (configurator NoOpProxyConfigurator) ConfigureVIProxy() error {
 type NitroProxyConfigurator struct {
 	SOCKSURL    string
 	VIProxyPort uint16
-	InEnclave   bool
 }
 
 func ParseSOCKSAddress(SOCKSURL string) (*net.TCPAddr, error) {
@@ -80,28 +79,21 @@ func (configurator NitroProxyConfigurator) ConfigureSOCKSProxy() error {
 }
 
 func (configurator NitroProxyConfigurator) ConfigureVIProxy() error {
-	// If running in an enclave, we need to proxy packets sent to the socks
-	// proxy address through the enclave barrier using viproxy.
-	// If running outside the enclave, the newServer can talk to the socks proxy
-	// directly, and we cannot start the socks proxy and the viproxy on the same
-	// inAddr.
-	if configurator.InEnclave {
-		addr, err := ParseSOCKSAddress(configurator.SOCKSURL)
-		if err != nil {
-			return err
-		}
+	addr, err := ParseSOCKSAddress(configurator.SOCKSURL)
+	if err != nil {
+		return err
+	}
 
-		tuple := &viproxy.Tuple{
-			InAddr: addr,
-			OutAddr: &vsock.Addr{
-				ContextID: uint32(parentCID),
-				Port:      uint32(configurator.VIProxyPort),
-			},
-		}
-		proxy := viproxy.NewVIProxy([]*viproxy.Tuple{tuple})
-		if err := proxy.Start(); err != nil {
-			return fmt.Errorf("%v: %w", ErrVIProxy, err)
-		}
+	tuple := &viproxy.Tuple{
+		InAddr: addr,
+		OutAddr: &vsock.Addr{
+			ContextID: uint32(parentCID),
+			Port:      uint32(configurator.VIProxyPort),
+		},
+	}
+	proxy := viproxy.NewVIProxy([]*viproxy.Tuple{tuple})
+	if err := proxy.Start(); err != nil {
+		return fmt.Errorf("%v: %w", ErrVIProxy, err)
 	}
 	return nil
 }

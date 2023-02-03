@@ -21,10 +21,10 @@ func (_ StandaloneChecker) CheckAttestDoc(
 	*nitrite.Result,
 	error,
 ) {
-	var roots x509.CertPool
+	roots := x509.NewCertPool()
 	res, err := nitrite.Verify(
 		attestDoc, nitrite.VerifyOptions{
-			Roots:               &roots,
+			Roots:               roots,
 			CurrentTime:         time.Now(),
 			AllowSelfSignedCert: true,
 		},

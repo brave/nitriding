@@ -159,18 +159,7 @@ func TestNitroProxyConfigurator_ConfigureSOCKSProxy(t *testing.T) {
 func TestNitroProxyConfigurator_ConfigureVIProxy(t *testing.T) {
 	t.Run("happy path - in enclave", func(t *testing.T) {
 		builder := server.NitroProxyConfigurator{
-			SOCKSURL:  "socks5://" + system.LocalHostAddr + ":1080",
-			InEnclave: true,
-		}
-
-		err := builder.ConfigureVIProxy()
-		assert.NoError(t, err)
-	})
-
-	t.Run("happy path - outside enclave", func(t *testing.T) {
-		builder := server.NitroProxyConfigurator{
-			SOCKSURL:  "socks5://" + system.LocalHostAddr + ":1080",
-			InEnclave: false,
+			SOCKSURL: "socks5://" + system.LocalHostAddr + ":1080",
 		}
 
 		err := builder.ConfigureVIProxy()
@@ -179,8 +168,7 @@ func TestNitroProxyConfigurator_ConfigureVIProxy(t *testing.T) {
 
 	t.Run("parse error", func(t *testing.T) {
 		builder := server.NitroProxyConfigurator{
-			SOCKSURL:  "bad address",
-			InEnclave: true,
+			SOCKSURL: "bad address",
 		}
 
 		err := builder.ConfigureVIProxy()
@@ -189,8 +177,7 @@ func TestNitroProxyConfigurator_ConfigureVIProxy(t *testing.T) {
 
 	t.Run("cannot start viproxy", func(t *testing.T) {
 		builder := server.NitroProxyConfigurator{
-			SOCKSURL:  "socks5://0.0.0.255:1080",
-			InEnclave: true,
+			SOCKSURL: "socks5://0.0.0.255:1080",
 		}
 
 		err := builder.ConfigureVIProxy()

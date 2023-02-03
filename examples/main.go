@@ -12,7 +12,7 @@ import (
 func main() {
 	//Create a nitriding server to run outside a Nitro Enclave using a
 	//standalone attester.
-	srv, err := nitriding.NewStandaloneServer("github.com/blocky/nitriding", 8443)
+	srv, err := nitriding.NewLocalServer(8443)
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not create server: %w", err))
 	}

@@ -130,13 +130,8 @@ func TestStandaloneAttesterParlor(t *testing.T) {
 }
 
 func (p *StandaloneAttesterParlor) SetupSubtest() {
-	p.cert = new(mocks.PrivilegedCert)
-	p.helper = new(mocks.AttesterHelper)
-}
-
-func (p *StandaloneAttesterParlor) TearDownSubtest() {
-	p.cert.AssertExpectations(p.T())
-	p.helper.AssertExpectations(p.T())
+	p.cert = mocks.NewPrivilegedCert(p.T())
+	p.helper = mocks.NewAttesterHelper(p.T())
 }
 
 func (p *StandaloneAttesterParlor) makeAttester() attestation.StandaloneAttester {

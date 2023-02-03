@@ -1,4 +1,4 @@
-package randseed
+package nitriding
 
 import (
 	"errors"

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/blocky/nitriding/cmd/nitriding"
+	"github.com/blocky/nitriding/cmd"
 )
 
 func main() {
-	nitriding.Execute()
+	cmd.Execute()
 }

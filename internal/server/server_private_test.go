@@ -13,7 +13,7 @@ import (
 
 func TestNewBaseServer(t *testing.T) {
 	appURL := "some url"
-	appPort := 1234
+	appPort := uint16(1234)
 	tlsBundleBuilder := SelfSignedTLSBundleBuilder{
 		PrivilegedCertBuilder: certificate.BasePrivilegedCertBuilder{},
 	}

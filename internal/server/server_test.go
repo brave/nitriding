@@ -37,20 +37,12 @@ func TestBaseServerBuilderParlor(t *testing.T) {
 }
 
 func (p *BaseServerBuilderParlor) SetupSubtest() {
-	p.attesterBuilder = new(mocks.Builder[attestation.Attester])
-	p.tlsBundleBuilder = new(mocks.Builder[server.TLSBundle])
-	p.proxyBuilder = new(mocks.ProxyConfigurator)
-	p.tlsBundle = new(mocks.TLSBundle)
-	p.nilTLSBundle = new(mocks.TLSBundle)
+	p.attesterBuilder = mocks.NewBuilder[attestation.Attester](p.T())
+	p.tlsBundleBuilder = mocks.NewBuilder[server.TLSBundle](p.T())
+	p.proxyBuilder = mocks.NewProxyConfigurator(p.T())
+	p.tlsBundle = mocks.NewTLSBundle(p.T())
+	p.nilTLSBundle = mocks.NewTLSBundle(p.T())
 
-}
-
-func (p *BaseServerBuilderParlor) TearDownSubtest() {
-	p.attesterBuilder.AssertExpectations(p.T())
-	p.tlsBundleBuilder.AssertExpectations(p.T())
-	p.proxyBuilder.AssertExpectations(p.T())
-	p.tlsBundle.AssertExpectations(p.T())
-	p.nilTLSBundle.AssertExpectations(p.T())
 }
 
 func (p *BaseServerBuilderParlor) TestBuild() {
@@ -180,7 +172,7 @@ func TestBaseServer_GetAttestDoc(t *testing.T) {
 	expErr := errors.New("expected error")
 
 	t.Run("happy path", func(t *testing.T) {
-		attester := new(mocks.Attester)
+		attester := mocks.NewAttester(t)
 
 		attester.On("GetAttestDoc", nonce, publicKey, userData).
 			Return(attestDoc, nil)
@@ -190,12 +182,10 @@ func TestBaseServer_GetAttestDoc(t *testing.T) {
 		outAttestDoc, err := srv.GetAttestDoc(nonce, publicKey, userData)
 		assert.NoError(t, err)
 		assert.Equal(t, attestDoc, outAttestDoc)
-
-		attester.AssertExpectations(t)
 	})
 
 	t.Run("attester error", func(t *testing.T) {
-		attester := new(mocks.Attester)
+		attester := mocks.NewAttester(t)
 
 		attester.On("GetAttestDoc", nonce, publicKey, userData).
 			Return(nil, expErr)
@@ -205,8 +195,6 @@ func TestBaseServer_GetAttestDoc(t *testing.T) {
 		outAttestDoc, err := srv.GetAttestDoc(nonce, publicKey, userData)
 		assert.Equal(t, expErr, err)
 		assert.Nil(t, outAttestDoc)
-
-		attester.AssertExpectations(t)
 	})
 }
 

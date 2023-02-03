@@ -61,7 +61,7 @@ func testCheckHandlerInputs(
 	})
 
 	t.Run("nil request", func(t *testing.T) {
-		srv := new(mocks.Server)
+		srv := mocks.NewServer(t)
 
 		rec := httptest.NewRecorder()
 		handler(srv, rec, nil)
@@ -70,8 +70,6 @@ func testCheckHandlerInputs(
 
 		payload := string(responsePayload(t, response))
 		assert.Contains(t, payload, nitriding.ErrNilRequest)
-
-		srv.AssertExpectations(t)
 	})
 }
 
@@ -86,7 +84,7 @@ func TestIndexHandler(t *testing.T) {
 
 	for name, tc := range happyPathTests {
 		t.Run(name, func(t *testing.T) {
-			srv := new(mocks.Server)
+			srv := mocks.NewServer(t)
 
 			srv.On("InEnclave").Return(tc.inEnclave)
 			srv.On("CodeURL").Return(codeURL)
@@ -104,8 +102,6 @@ func TestIndexHandler(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.inEnclave, info.InEnclave)
 			assert.Equal(t, codeURL, info.CodeURL)
-
-			srv.AssertExpectations(t)
 		})
 	}
 
@@ -122,11 +118,7 @@ func TestGetAttesterHandlerParlor(t *testing.T) {
 }
 
 func (p *GetAttesterHandlerParlor) SetupSubtest() {
-	p.srv = new(mocks.Server)
-}
-
-func (p *GetAttesterHandlerParlor) TearDownSubtest() {
-	p.srv.AssertExpectations(p.T())
+	p.srv = mocks.NewServer(p.T())
 }
 
 func (p *GetAttesterHandlerParlor) TestGetAttesterHandler() {

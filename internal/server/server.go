@@ -29,7 +29,7 @@ type Server interface {
 
 type BaseServerBuilder struct {
 	CodeURL          string
-	AppPort          int
+	AppPort          uint16
 	InEnclave        bool
 	AttesterBuilder  internal.Builder[attestation.Attester]
 	TLSBundleBuilder internal.Builder[TLSBundle]
@@ -68,7 +68,7 @@ func (builder BaseServerBuilder) Build() (Server, error) {
 
 type BaseServer struct {
 	appURL    string
-	appPort   int
+	appPort   uint16
 	attester  attestation.Attester
 	cert      func(context.Context) (certificate.Cert, error)
 	httpSrv   http.Server
@@ -78,7 +78,7 @@ type BaseServer struct {
 
 func NewBaseServer(
 	appURL string,
-	appPort int,
+	appPort uint16,
 	tlsBundle TLSBundle,
 	attester attestation.Attester,
 	inEnclave bool,

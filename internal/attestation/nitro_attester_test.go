@@ -56,11 +56,7 @@ func TestNitroAttesterParlor(t *testing.T) {
 }
 
 func (p *NitroAttesterParlor) SetupSubtest() {
-	p.nsmSession = new(mocks.NSMSession)
-}
-
-func (p *NitroAttesterParlor) TearDownSubtest() {
-	p.nsmSession.AssertExpectations(p.T())
+	p.nsmSession = mocks.NewNSMSession(p.T())
 }
 
 func (p *NitroAttesterParlor) TestGetAttestDoc() {

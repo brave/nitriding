@@ -36,8 +36,7 @@ func VerifyCert(t *testing.T, cert certificate.Cert) {
 		CurrentTime:   currentTime,
 		KeyUsages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageAny,
-		},
-	})
+		}})
 	assert.NoError(t, err)
 }
 
@@ -47,30 +46,26 @@ func TestBaseCert_Interfaces(t *testing.T) {
 
 func TestMakeBaseCertFromDerBytesRaw(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		converter := new(mocks.Converter)
+		converter := mocks.NewConverter(t)
 		derBytes := certificate.DerBytes("some DER bytes")
 
 		cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
 		assert.NoError(t, err)
 		assert.Equal(t, cert.DerBytes(), derBytes)
-
-		converter.AssertExpectations(t)
 	})
 
 	t.Run("nil DER bytes", func(t *testing.T) {
-		converter := new(mocks.Converter)
+		converter := mocks.NewConverter(t)
 
 		cert, err := certificate.MakeBaseCertFromDerBytesRaw(nil, converter)
 		assert.ErrorContains(t, err, certificate.ErrNilDERBytes)
 		assert.Equal(t, certificate.BaseCert{}, cert)
-
-		converter.AssertExpectations(t)
 	})
 }
 
 func TestMakeBaseCertFromPemBytesRaw(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		converter := new(mocks.Converter)
+		converter := mocks.NewConverter(t)
 		pemBytes := certificate.PemBytes("some PEM bytes")
 		derBytes := certificate.DerBytes("some DER bytes")
 
@@ -79,22 +74,18 @@ func TestMakeBaseCertFromPemBytesRaw(t *testing.T) {
 		cert, err := certificate.MakeBaseCertFromPemBytesRaw(pemBytes, converter)
 		assert.NoError(t, err)
 		assert.Equal(t, cert.DerBytes(), derBytes)
-
-		converter.AssertExpectations(t)
 	})
 
 	t.Run("nil PEM bytes", func(t *testing.T) {
-		converter := new(mocks.Converter)
+		converter := mocks.NewConverter(t)
 
 		cert, err := certificate.MakeBaseCertFromPemBytesRaw(nil, converter)
 		assert.ErrorContains(t, err, certificate.ErrNilPEMBytes)
 		assert.Equal(t, certificate.BaseCert{}, cert)
-
-		converter.AssertExpectations(t)
 	})
 
 	t.Run("PemToDer fails", func(t *testing.T) {
-		converter := new(mocks.Converter)
+		converter := mocks.NewConverter(t)
 		pemBytes := certificate.PemBytes("some PEM bytes")
 		expErr := errors.New("expected error")
 
@@ -103,24 +94,20 @@ func TestMakeBaseCertFromPemBytesRaw(t *testing.T) {
 		cert, err := certificate.MakeBaseCertFromPemBytesRaw(pemBytes, converter)
 		assert.ErrorIs(t, err, expErr)
 		assert.Equal(t, certificate.BaseCert{}, cert)
-
-		converter.AssertExpectations(t)
 	})
 }
 
 func TestBaseCert_DerBytes(t *testing.T) {
-	converter := new(mocks.Converter)
+	converter := mocks.NewConverter(t)
 	derBytes := certificate.DerBytes("some DER bytes")
 
 	cert, err := certificate.MakeBaseCertFromDerBytesRaw(derBytes, converter)
 	assert.NoError(t, err)
 	assert.Equal(t, cert.DerBytes(), derBytes)
-
-	converter.AssertExpectations(t)
 }
 
 func TestBaseCert_PemBytes(t *testing.T) {
-	converter := new(mocks.Converter)
+	converter := mocks.NewConverter(t)
 	derBytes := certificate.DerBytes("some DER bytes")
 	pemBytes := certificate.PemBytes("some PEM bytes")
 
@@ -132,12 +119,10 @@ func TestBaseCert_PemBytes(t *testing.T) {
 	outPemBytes, err := cert.PemBytes()
 	assert.NoError(t, err)
 	assert.Equal(t, pemBytes, outPemBytes)
-
-	converter.AssertExpectations(t)
 }
 
 func TestBaseCert_PemBytes_FailDerToPem(t *testing.T) {
-	converter := new(mocks.Converter)
+	converter := mocks.NewConverter(t)
 	derBytes := certificate.DerBytes("some DER bytes")
 	expErr := errors.New("expected error")
 
@@ -149,12 +134,10 @@ func TestBaseCert_PemBytes_FailDerToPem(t *testing.T) {
 	outPemBytes, err := cert.PemBytes()
 	assert.ErrorIs(t, err, expErr)
 	assert.Nil(t, outPemBytes)
-
-	converter.AssertExpectations(t)
 }
 
 func TestBaseCert_Digest(t *testing.T) {
-	converter := new(mocks.Converter)
+	converter := mocks.NewConverter(t)
 	derBytes := certificate.DerBytes("some DER bytes")
 	digestBytes := certificate.DigestBytes(sha256.Sum256(derBytes))
 
@@ -169,6 +152,4 @@ func TestBaseCert_Digest(t *testing.T) {
 		certificate.DigestBytes(sha256.Sum256(derBytes)),
 		outDigestBytes,
 	)
-
-	converter.AssertExpectations(t)
 }

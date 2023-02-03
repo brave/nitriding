@@ -137,7 +137,7 @@ func TestACMECertMgr_GetCert(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("happy path", func(t *testing.T) {
-		cache := new(mocks.Cache)
+		cache := mocks.NewCache(t)
 
 		cache.On("Get", mock.Anything, fqdn).Return([]byte(pemBytes), nil)
 
@@ -153,8 +153,6 @@ func TestACMECertMgr_GetCert(t *testing.T) {
 		cert, err := certMgr.GetCert(ctx, fqdn)
 		assert.NoError(t, err)
 		assert.NotNil(t, cert)
-
-		cache.AssertExpectations(t)
 	})
 
 	t.Run("nil manager", func(t *testing.T) {
@@ -164,7 +162,6 @@ func TestACMECertMgr_GetCert(t *testing.T) {
 		cert, err := certMgr.GetCert(ctx, fqdn)
 		assert.ErrorContains(t, err, certificate.ErrNilManager)
 		assert.Nil(t, cert)
-
 	})
 
 	t.Run("fqdn not whitelisted", func(t *testing.T) {
@@ -191,7 +188,7 @@ func TestACMECertMgr_GetCert(t *testing.T) {
 	})
 
 	t.Run("cannot make cert", func(t *testing.T) {
-		cache := new(mocks.Cache)
+		cache := mocks.NewCache(t)
 
 		cache.On("Get", mock.Anything, fqdn).Return([]byte("no PEM bytes"), nil)
 
@@ -208,8 +205,6 @@ func TestACMECertMgr_GetCert(t *testing.T) {
 		assert.ErrorContains(t, err, certificate.ErrMakeCert)
 		assert.ErrorContains(t, err, certificate.ErrNoPEMData)
 		assert.Nil(t, cert)
-
-		cache.AssertExpectations(t)
 	})
 }
 
