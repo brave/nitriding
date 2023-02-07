@@ -3,7 +3,7 @@ module github.com/blocky/nitriding
 go 1.19
 
 require (
-	github.com/blocky/nitrite v0.0.2-0.20230126192142-5515b10e6983
+	github.com/blocky/nitrite v0.0.2-0.20230203005949-9ba075fecde3
 	github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737
 	github.com/brave/viproxy v0.1.2
 	github.com/fxamacker/cbor/v2 v2.4.0

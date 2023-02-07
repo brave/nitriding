@@ -1,5 +1,5 @@
-github.com/blocky/nitrite v0.0.2-0.20230126192142-5515b10e6983 h1:HXS9rrJALYH5hEwe04x3Id8Q8ySHksudx9mP+RTBa6c=
-github.com/blocky/nitrite v0.0.2-0.20230126192142-5515b10e6983/go.mod h1:QhpIeDjO6C7k9XQy6osO+Ulj+3ZwJrTfZgzW2yysOhk=
+github.com/blocky/nitrite v0.0.2-0.20230203005949-9ba075fecde3 h1:0XZYIw4O1eHu/DyEwznq5ycR2vNePWBaz2tFFORvpPM=
+github.com/blocky/nitrite v0.0.2-0.20230203005949-9ba075fecde3/go.mod h1:QhpIeDjO6C7k9XQy6osO+Ulj+3ZwJrTfZgzW2yysOhk=
 github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737 h1:qXEyFyZ6ROB0N6CAhINTTbm12UrBiioo7oOPEUzx1yk=
 github.com/blocky/parlor v1.0.1-0.20230104152939-e2762a403737/go.mod h1:Xf/srxw38gl4j3lxo4hxpoSDociIaVWbuZi1lJhjOAk=
 github.com/brave/viproxy v0.1.2 h1:sOY8bI1CqLNq+KyRJrEzQuWia81UmLjK5kqTqD284hs=
