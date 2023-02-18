@@ -29,12 +29,47 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 
 	"github.com/hf/nitrite"
 	"golang.org/x/crypto/nacl/box"
 )
+
+var errWeAreOrigin = errors.New("cannot sync because I'm the origin enclave")
+
+func RequestKeysFromSRV(domain string, keyMaterial any) error {
+	var err error
+
+	// LookupSRV guarantees that the retrieved records are sorted by priority
+	// and randomized by weight within a priority.
+	//
+	// It's possible that this fails because Kubernetes didn't manage to create
+	// the SRV records in time.  In this case, we terminate, Kubernetes is
+	// going to restart this enclave, and it should work the next time.
+	_, srvAddrs, err := net.LookupSRV("", "", domain)
+	if err != nil {
+		return fmt.Errorf("failed to look up SRV record: %w", err)
+	}
+
+	// TODO: prevent enclaves from syncing with themselves
+
+	// Traverse already-running enclaves in order, dictated by the priority and
+	// weight that the SRV record came with.
+	for _, s := range srvAddrs {
+		tcpAddr := fmt.Sprintf("%s:%d", s.Target, s.Port)
+
+		elog.Printf("Attempting to synchronize with enclave %s", tcpAddr)
+		if err = RequestKeys(tcpAddr, keyMaterial); err != nil {
+			elog.Printf("Sync failed: %v", err)
+			continue
+		}
+		elog.Printf("Successfully synchronize with enclave %s", tcpAddr)
+		break
+	}
+	return err
+}
 
 // RequestKeys asks a remote enclave to share its key material with us, which
 // is then written to the provided variable.

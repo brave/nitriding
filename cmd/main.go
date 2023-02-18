@@ -13,10 +13,14 @@ import (
 var l = log.New(os.Stderr, "nitriding-cmd: ", log.Ldate|log.Ltime|log.LUTC|log.Lshortfile)
 
 func main() {
-	var fqdn, appURL, appWebSrv string
+	var fqdn, appURL, appWebSrv, syncDomain string
 	var extPort, intPort, hostProxyPort uint
 	var useACME, waitForApp, debug bool
 	var err error
+
+	var s struct{}
+	//l.Fatal(nitriding.ResolveSrvRecord("test-srv.nymity.ch"))
+	l.Fatal(nitriding.RequestKeysFromSRV("test-srv.nymity.ch", &s))
 
 	flag.StringVar(&fqdn, "fqdn", "",
 		"FQDN of the enclave application (e.g., \"example.com\").")
@@ -24,6 +28,8 @@ func main() {
 		"Code repository of the enclave application (e.g., \"github.com/foo/bar\").")
 	flag.StringVar(&appWebSrv, "appwebsrv", "",
 		"Enclave-internal HTTP server of the enclave application (e.g., \"http://127.0.0.1:8081\").")
+	flag.StringVar(&syncDomain, "sync-with", "",
+		"Domain name whose SRV record contains the TCP addresses of enclaves we should sync with.")
 	flag.UintVar(&extPort, "extport", 8443,
 		"Nitriding's VSOCK-facing HTTPS port.  Must match port forwarding rules on EC2 host.")
 	flag.UintVar(&intPort, "intport", 8080,
@@ -36,6 +42,7 @@ func main() {
 		"Start Internet-facing Web server only after application signals its readiness.")
 	flag.BoolVar(&debug, "debug", false,
 		"Print debug messages.")
+
 	flag.Parse()
 
 	if fqdn == "" {
@@ -82,6 +89,13 @@ func main() {
 
 	if err := enclave.Start(); err != nil {
 		l.Fatalf("Enclave terminated: %v", err)
+	}
+
+	if syncDomain != "" {
+		if err := nitriding.RequestKeysFromSRV(syncDomain, enclave.KeyMaterial); err != nil {
+			// This is bad enough of an error for us to terminate.
+			l.Fatalf("Failed to sync with remote enclave(s): %v", err)
+		}
 	}
 
 	// Block on this read forever.
