@@ -37,8 +37,6 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
-var errWeAreOrigin = errors.New("cannot sync because I'm the origin enclave")
-
 func RequestKeysFromSRV(domain string, keyMaterial any) error {
 	var err error
 
@@ -48,10 +46,12 @@ func RequestKeysFromSRV(domain string, keyMaterial any) error {
 	// It's possible that this fails because Kubernetes didn't manage to create
 	// the SRV records in time.  In this case, we terminate, Kubernetes is
 	// going to restart this enclave, and it should work the next time.
+	elog.Printf("Looking up SRV record of domain name %s.", domain)
 	_, srvAddrs, err := net.LookupSRV("", "", domain)
 	if err != nil {
 		return fmt.Errorf("failed to look up SRV record: %w", err)
 	}
+	elog.Printf("Got %d addresses via SRV record.", len(srvAddrs))
 
 	// TODO: prevent enclaves from syncing with themselves
 

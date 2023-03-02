@@ -18,10 +18,6 @@ func main() {
 	var useACME, waitForApp, debug bool
 	var err error
 
-	var s struct{}
-	//l.Fatal(nitriding.ResolveSrvRecord("test-srv.nymity.ch"))
-	l.Fatal(nitriding.RequestKeysFromSRV("test-srv.nymity.ch", &s))
-
 	flag.StringVar(&fqdn, "fqdn", "",
 		"FQDN of the enclave application (e.g., \"example.com\").")
 	flag.StringVar(&appURL, "appurl", "",
@@ -92,6 +88,7 @@ func main() {
 	}
 
 	if syncDomain != "" {
+		l.Printf("Attempting to sync with enclave(s) %s.", syncDomain)
 		if err := nitriding.RequestKeysFromSRV(syncDomain, enclave.KeyMaterial); err != nil {
 			// This is bad enough of an error for us to terminate.
 			l.Fatalf("Failed to sync with remote enclave(s): %v", err)
