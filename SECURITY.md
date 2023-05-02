@@ -2,7 +2,8 @@
 
 ## Supported Versions
 
-All versions including and above the current stable release version number.
+No versions in this repository as it is archived.
+Refer instead to https://github.com/brave/nitriding-daemon.
 
 ## Reporting a Vulnerability
 
